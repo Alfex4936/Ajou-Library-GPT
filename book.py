@@ -16,8 +16,8 @@ openai.api_key = api_key
 
 
 async def fetch_books(query, max_results=10):
+    print(f"Searching for {query}...")
     async with ClientSession() as session:
-        print(f"Searching for {query}...")
         url = f"https://library.ajou.ac.kr/pyxis-api/1/collections/1/search?all=1|k|a|{query}&facet=false&max={max_results}"
         async with session.get(url) as response:
             data = await response.json()
@@ -78,12 +78,14 @@ def generate_query(interest):
         messages=[
             {
                 "role": "system",
-                "content": "You are an AI trained to generate search queries for book titles based on user prompt. Your goal is to return a list of unique keywords that are relevant to the user's interests, specifically focusing on higher education level material. For example, if the user inputs 'Want to learn deep learning', return a comma-separated string of keywords like 'Deep Learning, Neural Networks, Machine Learning'.",
+                "content": "You are an AI trained to generate search queries for book titles based on user prompts. Your goal is to return a list of unique keywords that are most relevant to the user's interests, specifically focusing on higher education level material. Make sure each keyword is relevant to the topic of interest by combining the topic keyword with other relevant keywords. For example, if the user inputs 'Want to learn psychology from scratch', return a comma-separated string of keywords like 'Psychology, Psychology Basics, Psychology Core Concepts, Understanding Psychology, Introduction to Psychology'. Must contain at least the core keyword, in there it was Psychology (심리학)",
             },
             {"role": "user", "content": prompt},
         ],
-        temperature=0.9,
+        temperature=0.7,
         max_tokens=100,
+        top_p=0.9,
+        presence_penalty=0.8,
     )
 
     query = response["choices"][0]["message"]["content"].strip()
@@ -130,7 +132,7 @@ async def main():
         book_embeddings,
         book_id_to_data,
         top_k=5,
-        similarity_threshold=0.7,
+        similarity_threshold=0.6,
     )
 
     for book_id, book_info in recommended_books:
