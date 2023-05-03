@@ -12,8 +12,8 @@ use async_openai::{
     Client,
 };
 use dotenv::dotenv;
-use futures::future::join_all;
-use futures::stream::StreamExt;
+use futures::TryFutureExt;
+use futures::{future::try_join_all, TryStreamExt};
 
 use reqwest::Client as ReqwestClient;
 use serde_json::Value;
@@ -50,7 +50,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
     io::stdout().flush().unwrap(); // Flush the output
 
     let queries = generate_query(interest.clone(), &openai_client).await?;
-    println!("\rGPT-4가 생성한 쿼리: {:?}", queries);
+    println!("\rGPT-4가 생성한 쿼리: ",);
+    for query in &queries {
+        println!(" - {}", query);
+    }
 
     let mut book_embeddings = HashMap::new();
     let mut book_id_to_data = HashMap::new();
@@ -60,10 +63,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .map(|keyword| fetch_books_with_embeddings(keyword, &reqwest_client, &openai_client))
         .collect();
 
-    let all_books_results = join_all(fetch_book_tasks).await;
+    let all_books_results = try_join_all(fetch_book_tasks).await?;
 
     for books_with_embeddings in all_books_results {
-        for (book, book_embedding) in books_with_embeddings? {
+        for (book, book_embedding) in books_with_embeddings {
             let book_id = format!("book_id_{}", book["id"].to_string());
             book_embeddings.insert(book_id.clone(), book_embedding);
             book_id_to_data.insert(
@@ -80,7 +83,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let recommended_books =
         recommend_books(student_embedding, book_embeddings, book_id_to_data, 5, 0.6);
 
-    for (book_id, book_info) in recommended_books {
+    println!("\n추천 도서 목록:");
+    for (index, (book_id, book_info)) in recommended_books.iter().enumerate() {
         let book_id_num = book_id.split('_').last().unwrap();
         let rent_status = get_rent_status_and_locations(book_id_num, &reqwest_client).await?;
         let rentable_locations: Vec<&str> = rent_status
@@ -89,10 +93,16 @@ async fn main() -> Result<(), Box<dyn Error>> {
             .collect();
 
         if rentable_locations.is_empty() {
-            println!("{}: {} (현재 대여 불가)", book_id, book_info);
+            println!("{}. {}: {} (현재 대여 불가)", index + 1, book_id, book_info);
         } else {
             let locations_str = rentable_locations.join(", ");
-            println!("{}: {} (대여 위치: {})", book_id, book_info, locations_str);
+            println!(
+                "{}. {}: {} (대여 위치: {})",
+                index + 1,
+                book_id,
+                book_info,
+                locations_str
+            );
         }
     }
 
@@ -137,7 +147,7 @@ async fn fetch_books_with_embeddings(
     openai_client: &Client,
 ) -> Result<Vec<(Value, Vec<f32>)>, Box<dyn Error>> {
     let books: Vec<Value> = fetch_books(keyword, reqwest_client).await?;
-    let mut book_embedding_futures = futures::stream::FuturesUnordered::new();
+    let book_embedding_futures = futures::stream::FuturesUnordered::new();
 
     for book in &books {
         let book_info = format!(
@@ -145,20 +155,15 @@ async fn fetch_books_with_embeddings(
             book["titleStatement"], book["author"], book["publication"]
         );
         let book_info_clone = book_info.clone();
-        let openai_client = openai_client.clone();
-        book_embedding_futures.push(async move {
-            let book_embedding = fetch_embedding(book_info_clone, &openai_client).await?;
-            Ok((book.clone(), book_embedding))
-        });
+        // let openai_client = openai_client.clone();
+        book_embedding_futures.push(
+            fetch_embedding(book_info_clone, &openai_client)
+                .map_ok(move |book_embedding| (book.clone(), book_embedding)),
+        );
     }
 
-    let mut books_with_embeddings: Vec<(Value, Vec<f32>)> = Vec::new();
-    while let Some(result) = book_embedding_futures.next().await {
-        match result {
-            Ok((book, book_embedding)) => books_with_embeddings.push((book, book_embedding)),
-            Err(e) => return Err(e),
-        }
-    }
+    let books_with_embeddings: Vec<(Value, Vec<f32>)> =
+        book_embedding_futures.try_collect().await?;
 
     Ok(books_with_embeddings)
 }

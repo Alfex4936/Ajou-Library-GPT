@@ -2,6 +2,10 @@
 
 아주대학교 도서관 도서 추천 시스템
 
+--- "커서 훌륭한 프로그래머가 되고 싶어, 근데 코딩을 몰라"
+
+![image](https://user-images.githubusercontent.com/2356749/235857127-93c16a5e-f5ae-4541-ac4a-67eccf5a89e6.png)
+
 --- "인공지능을 공부하고 싶어"
 
 ![image](https://user-images.githubusercontent.com/2356749/235364713-63d2531e-77fd-4e56-9868-9ee94ae8bd18.png)
