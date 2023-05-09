@@ -2,6 +2,50 @@
 
 아주대학교 도서관 도서 추천 시스템
 
+```md
+### 도서관 검색: GPT를 공부하고 싶어
+### GPT-4가 생성한 쿼리:
+ - GPT
+ - GPT 학습
+ - GPT 이해하기
+ - GPT 기초
+ - GPT 공부
+ - GPT 모델
+ - GPT 알고리즘
+ - Transformer
+ - Transformer 구조
+ - Transformer 기초
+ - Transformer 공부
+ - 인공지능
+ - 자연어 처리
+ - 딥러닝
+ - 심층학습
+ - Linear Algebra
+ - Probability
+ - Statistics
+ - Calculus
+ - 선형대수학
+ - 확률
+ - 통계학
+ - 미적분학
+
+### 추천 도서 목록:
+1. book_id_1223427: "(Do it!) 강화 학습 입문 :GPT-2부터 자동 신경망 구성까지" by "조규남", published by "서울 :이지스퍼블리싱, 2021:(교보문고,2021)" (현재 대여 불가)
+2. book_id_1277876: "챗GPT 교육혁명 : ChatGPT를 활용한 하이터치 하이테크 미래교육" by "정제영", published by "[서울] : 포르체, 2023" (대여 위치: 1층.큐레이션)
+3. book_id_1277878: "챗GPT 기회를 잡는 사람들" by "장민", published by "서울 : 알투스, 2023" (현재
+대여 불가)
+4. book_id_1277875: "진짜 챗GPT 활용법 : 엑셀 활용법부터 블로그 자동화, 유튜브 콘텐츠 생성, 미드저니와 ChatGPT API 사용법까지" by "김준성", published by "파주 : 위키북스, 2023" (현재 대여 불가)
+5. book_id_1277522: "GPT 제너레이션 : 챗GPT가 바꿀 우리 인류의 미래" by "이시한", published by "[대
+구] : 북모먼트 : 북로망스, 2023" (현재 대여 불가)
+
+### 추천 RISS 목록:
+1. riss_id_"16372981": "GPT의 Multi-Head 생성을 통한 감성 대화 챗봇 시스템 개발" by "이효민", published by "연세대학교 대학원"
+2. riss_id_"15652223": "GPT-2 모델을 이용한 카테고리별 텍스트 생성" by "손성환", published by "국민 대학교 일반대학원"
+3. riss_id_"16022984": "GPT-2를 이용한 지식완성 = Knowledge Graph Completion Using GPT-2" by "김상운", published by "숭실대학교 대학원"
+4. riss_id_"14210938": "GPT-vanishing 구조와 NP 작용소의 고유치의 조정가능성에 대한 분석" by "풍정정", published by "인하대학교 대학원"
+5. riss_id_"16394576": "한국어 중의성 문제를 위한 GPT 혼합형 기반의 검색결과 정확도 향상 = Improve the accuracy of search result for ambiguous expression in Korean using hybrid GPT" by "김연건", published by "한양대학교 공학대학원"
+```
+
 --- "커서 훌륭한 프로그래머가 되고 싶어, 근데 코딩을 몰라"
 
 ![image](https://user-images.githubusercontent.com/2356749/235857127-93c16a5e-f5ae-4541-ac4a-67eccf5a89e6.png)

@@ -12,21 +12,10 @@ use async_openai::{
     Client,
 };
 use dotenv::dotenv;
-use futures::TryFutureExt;
-use futures::{future::try_join_all, TryStreamExt};
-
+use futures::{select, stream::StreamExt, TryStreamExt};
+use futures::{stream::FuturesUnordered, TryFutureExt};
 use reqwest::Client as ReqwestClient;
 use serde_json::Value;
-
-// use ndarray::{Array1, Array2, Axis};
-// use ndarray_linalg::Norm;
-
-// fn cosine_similarity(x: &Array2<f32>, y: &Array2<f32>) -> Array2<f32> {
-//     let x_normalized = x.map_axis(Axis(1), |v| v.div(v.norm()));
-//     let y_normalized = y.map_axis(Axis(1), |v| v.div(v.norm()));
-//     let dot_product = x_normalized.dot(&y_normalized.t());
-//     dot_product
-// }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -58,30 +47,72 @@ async fn main() -> Result<(), Box<dyn Error>> {
     let mut book_embeddings = HashMap::new();
     let mut book_id_to_data = HashMap::new();
 
-    let fetch_book_tasks: Vec<_> = queries
-        .iter()
-        .map(|keyword| fetch_books_with_embeddings(keyword, &reqwest_client, &openai_client))
-        .collect();
+    let mut riss_embeddings = HashMap::new();
+    let mut riss_id_to_data = HashMap::new();
 
-    let all_books_results = try_join_all(fetch_book_tasks).await?;
+    let mut fetch_book_tasks = FuturesUnordered::new();
+    let mut fetch_riss_tasks = FuturesUnordered::new();
 
-    for books_with_embeddings in all_books_results {
-        for (book, book_embedding) in books_with_embeddings {
-            let book_id = format!("book_id_{}", book["id"].to_string());
-            book_embeddings.insert(book_id.clone(), book_embedding);
-            book_id_to_data.insert(
-                book_id.clone(),
-                format!(
-                    "{} by {}, published by {}",
-                    book["titleStatement"], book["author"], book["publication"]
-                ),
-            );
+    for keyword in &queries {
+        fetch_riss_tasks.push(fetch_riss_with_embeddings(
+            keyword,
+            &reqwest_client,
+            &openai_client,
+        ));
+    }
+
+    for keyword in &queries {
+        fetch_book_tasks.push(fetch_books_with_embeddings(
+            keyword,
+            &reqwest_client,
+            &openai_client,
+        ));
+    }
+
+    loop {
+        select! {
+            books_with_embeddings = fetch_book_tasks.select_next_some() => {
+                let books_with_embeddings = books_with_embeddings?;
+                for (book, book_embedding) in books_with_embeddings {
+                    let book_id = format!("book_id_{}", book["id"].to_string());
+                    book_embeddings.insert(book_id.clone(), book_embedding);
+                    book_id_to_data.insert(
+                        book_id.clone(),
+                        format!(
+                            "{} by {}, published by {}",
+                            book["titleStatement"], book["author"], book["publication"]
+                        ),
+                    );
+                }
+            }
+            riss_with_embeddings = fetch_riss_tasks.select_next_some() => {
+                let riss_with_embeddings = riss_with_embeddings?;
+                for (riss, riss_embedding) in riss_with_embeddings {
+                    let riss_id = format!("riss_id_{}", riss["controlNo"].to_string());
+                    riss_embeddings.insert(riss_id.clone(), riss_embedding);
+                    riss_id_to_data.insert(
+                        riss_id.clone(),
+                        format!(
+                            "{} by {}, published by {}",
+                            riss["title"], riss["author"], riss["publisher"]
+                        ),
+                    );
+                }
+            }
+            complete => break,
         }
     }
 
     let student_embedding = fetch_embedding(interest, &openai_client).await?;
-    let recommended_books =
-        recommend_books(student_embedding, book_embeddings, book_id_to_data, 5, 0.6);
+    let recommended_books = recommend_books(
+        student_embedding.clone(),
+        book_embeddings,
+        book_id_to_data,
+        5,
+        0.6,
+    );
+    let recommended_riss =
+        recommend_books(student_embedding, riss_embeddings, riss_id_to_data, 5, 0.6);
 
     println!("\n추천 도서 목록:");
     for (index, (book_id, book_info)) in recommended_books.iter().enumerate() {
@@ -104,6 +135,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 locations_str
             );
         }
+    }
+
+    println!("\n추천 RISS 목록:");
+    for (index, (riss_id, riss_info)) in recommended_riss.iter().enumerate() {
+        println!("{}. {}: {}", index + 1, riss_id, riss_info);
     }
 
     println!("\nPress Enter to exit...");
@@ -137,7 +173,10 @@ async fn generate_query(
     let response = openai_client.chat().create(request).await?;
 
     let query_text = response.choices[0].message.content.clone();
-    let queries: Vec<String> = query_text.split(", ").map(|s| s.to_string()).collect();
+    let queries: Vec<String> = query_text
+        .split(", ")
+        .map(|s| s.trim().to_string())
+        .collect();
     Ok(queries)
 }
 
@@ -166,6 +205,31 @@ async fn fetch_books_with_embeddings(
         book_embedding_futures.try_collect().await?;
 
     Ok(books_with_embeddings)
+}
+
+async fn fetch_riss_with_embeddings(
+    keyword: &str,
+    reqwest_client: &ReqwestClient,
+    openai_client: &Client,
+) -> Result<Vec<(Value, Vec<f32>)>, Box<dyn Error>> {
+    let riss: Vec<Value> = fetch_riss(keyword, reqwest_client).await?;
+    let riss_embedding_futures = futures::stream::FuturesUnordered::new();
+
+    for book in &riss {
+        let book_info = format!(
+            "{} by {}, published by {}",
+            book["title"], book["author"], book["publisher"]
+        );
+        let book_info_clone = book_info.clone();
+        riss_embedding_futures.push(
+            fetch_embedding(book_info_clone, &openai_client)
+                .map_ok(move |book_embedding| (book.clone(), book_embedding)),
+        );
+    }
+
+    let riss_with_embeddings: Vec<(Value, Vec<f32>)> = riss_embedding_futures.try_collect().await?;
+
+    Ok(riss_with_embeddings)
 }
 
 async fn fetch_embedding(text: String, openai_client: &Client) -> Result<Vec<f32>, Box<dyn Error>> {
@@ -221,6 +285,24 @@ async fn fetch_books(
     reqwest_client: &ReqwestClient,
 ) -> Result<Vec<Value>, Box<dyn Error>> {
     let url = format!("https://library.ajou.ac.kr/pyxis-api/1/collections/1/search?all=1|k|a|{}&facet=false&max=10", keyword);
+    let response = reqwest_client
+        .get(&url)
+        .send()
+        .await?
+        .json::<Value>()
+        .await?;
+    let books = response["data"]["list"].as_array().unwrap().clone();
+    Ok(books)
+}
+
+async fn fetch_riss(
+    keyword: &str,
+    reqwest_client: &ReqwestClient,
+) -> Result<Vec<Value>, Box<dyn Error>> {
+    let url = format!(
+        "https://library.ajou.ac.kr/pyxis-api/mashup-riss/T/{}?max=10",
+        keyword
+    );
     let response = reqwest_client
         .get(&url)
         .send()
