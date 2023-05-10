@@ -1,5 +1,5 @@
 use std::collections::HashMap;
-use std::env;
+use std::env::var;
 use std::error::Error;
 use std::io;
 use std::io::Write;
@@ -20,7 +20,7 @@ use serde_json::Value;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     dotenv().ok();
-    let api_key = env::var("API_KEY").expect("API_KEY not set");
+    let api_key = var("API_KEY").expect("API_KEY not set");
 
     let openai_client = Client::new().with_api_key(api_key.clone());
     let reqwest_client = ReqwestClient::new();
@@ -40,8 +40,12 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     let queries = generate_query(interest.clone(), &openai_client).await?;
     println!("\rGPT-4가 생성한 쿼리: ",);
-    for query in &queries {
-        println!(" - {}", query);
+    for query in queries.chunks(2) {
+        match query {
+            [korean, english] => println!("\t- {}, {}", korean, english),
+            [single] => println!("\t- {}", single),
+            _ => (),
+        }
     }
 
     let mut book_embeddings = HashMap::new();
@@ -59,9 +63,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             &reqwest_client,
             &openai_client,
         ));
-    }
 
-    for keyword in &queries {
         fetch_book_tasks.push(fetch_books_with_embeddings(
             keyword,
             &reqwest_client,
@@ -74,7 +76,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             books_with_embeddings = fetch_book_tasks.select_next_some() => {
                 let books_with_embeddings = books_with_embeddings?;
                 for (book, book_embedding) in books_with_embeddings {
-                    let book_id = format!("book_id_{}", book["id"].to_string());
+                    let book_id = format!("book_id_{}", book["id"]);
                     book_embeddings.insert(book_id.clone(), book_embedding);
                     book_id_to_data.insert(
                         book_id.clone(),
@@ -88,7 +90,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             riss_with_embeddings = fetch_riss_tasks.select_next_some() => {
                 let riss_with_embeddings = riss_with_embeddings?;
                 for (riss, riss_embedding) in riss_with_embeddings {
-                    let riss_id = format!("riss_id_{}", riss["controlNo"].to_string());
+                    let riss_id = format!("riss_id_{}", riss["controlNo"]);
                     riss_embeddings.insert(riss_id.clone(), riss_embedding);
                     riss_id_to_data.insert(
                         riss_id.clone(),
@@ -99,7 +101,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
                     );
                 }
             }
-            complete => break,
+            complete => {
+                if fetch_book_tasks.is_empty() && fetch_riss_tasks.is_empty() {
+                    break;
+                }
+            }
         }
     }
 
@@ -112,7 +118,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         0.6,
     );
     let recommended_riss =
-        recommend_books(student_embedding, riss_embeddings, riss_id_to_data, 5, 0.6);
+        recommend_books(student_embedding, riss_embeddings, riss_id_to_data, 5, 0.8);
 
     println!("\n추천 도서 목록:");
     for (index, (book_id, book_info)) in recommended_books.iter().enumerate() {
@@ -153,7 +159,7 @@ async fn generate_query(
     openai_client: &Client,
 ) -> Result<Vec<String>, Box<dyn Error>> {
     let request = CreateChatCompletionRequestArgs::default()
-        .max_tokens(150 as u16)
+        .max_tokens(150_u16)
         .model("gpt-4")
         .messages([
             ChatCompletionRequestMessageArgs::default()
@@ -196,7 +202,7 @@ async fn fetch_books_with_embeddings(
         let book_info_clone = book_info.clone();
         // let openai_client = openai_client.clone();
         book_embedding_futures.push(
-            fetch_embedding(book_info_clone, &openai_client)
+            fetch_embedding(book_info_clone, openai_client)
                 .map_ok(move |book_embedding| (book.clone(), book_embedding)),
         );
     }
@@ -222,7 +228,7 @@ async fn fetch_riss_with_embeddings(
         );
         let book_info_clone = book_info.clone();
         riss_embedding_futures.push(
-            fetch_embedding(book_info_clone, &openai_client)
+            fetch_embedding(book_info_clone, openai_client)
                 .map_ok(move |book_embedding| (book.clone(), book_embedding)),
         );
     }
@@ -261,9 +267,9 @@ fn recommend_books(
     similarities.sort_unstable_by(|a, b| a.0.partial_cmp(&b.0).unwrap().reverse());
 
     let mut recommended_books = HashMap::new();
-    for i in 0..top_k {
-        if similarities[i].0 >= threshold {
-            let book_id = similarities[i].1;
+    for sim in similarities.iter().take(top_k) {
+        if sim.0 >= threshold {
+            let book_id = sim.1;
             recommended_books.insert(
                 book_id.clone(),
                 book_id_to_data.get(book_id).unwrap().clone(),
@@ -291,8 +297,13 @@ async fn fetch_books(
         .await?
         .json::<Value>()
         .await?;
-    let books = response["data"]["list"].as_array().unwrap().clone();
-    Ok(books)
+
+    if response["code"] == "success.noRecord" {
+        Ok(vec![])
+    } else {
+        let books = response["data"]["list"].as_array().unwrap().clone();
+        Ok(books)
+    }
 }
 
 async fn fetch_riss(
@@ -309,8 +320,13 @@ async fn fetch_riss(
         .await?
         .json::<Value>()
         .await?;
-    let books = response["data"]["list"].as_array().unwrap().clone();
-    Ok(books)
+
+    if response["code"] == "success.noRecord" {
+        Ok(vec![])
+    } else {
+        let books = response["data"]["list"].as_array().unwrap().clone();
+        Ok(books)
+    }
 }
 
 async fn get_rent_status_and_locations(
@@ -337,10 +353,7 @@ async fn get_rent_status_and_locations(
                 Some(cs) => cs.get("isCharged").and_then(Value::as_bool),
                 None => None,
             };
-            let is_rentable = match is_charged {
-                Some(false) => true,
-                _ => false,
-            };
+            let is_rentable = matches!(is_charged, Some(false));
             rent_status.entry(location_name).or_insert(is_rentable);
         }
     }
