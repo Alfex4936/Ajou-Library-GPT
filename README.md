@@ -3,6 +3,31 @@
 아주대학교 도서관 도서 추천 시스템
 
 ```md
+## 영어 검색 (English search)
+### 도서관 검색: i wanna learn about elephant's life
+### GPT-4가 생성한 쿼리:
+        - Elephant Life, Elephant Biology
+        - Elephant Social Behavior, Elephant Life Cycle
+        - Elephant Ecology, 코끼리 생활
+        - 코끼리 생물학, 코끼리 사회행동
+        - 코끼리 생명주기, 코끼리 생태학
+
+### 추천 도서 목록:
+1. book_id_689776: "Love, life, and elephants :an African love story" by "Sheldrick, Dame Daphne", published by "New York :Farrar, Straus and Giroux,2012." (대여 위치: 3층.응용과학)
+2. book_id_318267: "Coming of age with elephants : a memoir" by "Poole, Joyce", published by "New York : Hyperion,1996" (대여 위치: 4층.자연)
+3. book_id_689697: "Elephant Company :the inspiring story of an unlikely hero and the animals who helped him save lives in World War II" by "Croke, Vicki", published by "New York :Random House,2014." (대여 위치: 2층.역사지리)
+4. book_id_7491: "Three elephant power and other stories" by "Paterson, A. B", published by "Champaign, Ill. :Project Gutenberg" (현재 대여 불가)
+5. book_id_163844: "The elephant and my Jewish problem  : selected stories andjournals, 1957-1987" by "Nissenson, Hugh", published by "New York  : Harper & Row ,1988." (대여 위치: 제1 보존서고)
+
+### 추천 RISS 목록:
+1. riss_id_"10573616": "The effects of elephants on their habitats in the Shimba Hills, Kenya" by "Kahumbu, Paula Gathoni", published by "Princeton University"
+2. riss_id_"10568150": "The evolution and conservation of the African forest elephant" by "Eggert, Lori S", published by "University of California, San Diego"
+3. riss_id_"13295182": "The secret lives of African forest elephants:  Using genetics, networks, and telemetry to understand sociality" by "Schuttler, Stephanie Grace", published by "University of Missouri - Columbia"
+4. riss_id_"10588647": "Ecology and conservation of elephants in African rangelands" by "Gadd, Michelle Erin", published by "University of California, Davis"
+5. riss_id_"10544197": "Aspects of elephant behavior, ecology, and interactions with humans (Conservation)" by "O'Connell, Caitlin Elizabeth", published by "University of California, Davis"
+```
+
+```md
 ### 도서관 검색: GPT를 공부하고 싶어
 ### GPT-4가 생성한 쿼리:
  - GPT
