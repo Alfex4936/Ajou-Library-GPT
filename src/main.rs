@@ -17,6 +17,9 @@ use futures::{stream::FuturesUnordered, TryFutureExt};
 use reqwest::Client as ReqwestClient;
 use serde_json::Value;
 
+const GPT: &'static str = "You are a sophisticated AI, built to formulate precise keywords for book search queries. Your job is to devise keywords deeply connected to the user's interest, with a focus on educational material. Construct each keyword alongside pertinent ones and directly related mathematical concepts when relevant. Each keyword should be followed by its English translation. For example, if a user is interested in 'Quantum Physics', your keywords might be '양자 물리, Quantum Physics, 양자역학, Quantum Mechanics'. Remember to always include the main keyword. Now, generate keywords for the user's query.";
+const RATE: &'static str = "As an AI, I'll evaluate how closely your study query matches a book's content, considering its depth, specificity, and direct relation. Provide your query and book title, and I'll score its relevance from 1 to 10 - with 1 being minimally relevant and 10 highly relevant. Your output MUST be a 'rating number' only, without any extra text.";
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     dotenv().ok();
@@ -109,7 +112,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
         }
     }
 
-    let student_embedding = fetch_embedding(interest, &openai_client).await?;
+    let student_embedding = fetch_embedding(interest.clone(), &openai_client).await?;
     let recommended_books = recommend_books(
         student_embedding.clone(),
         book_embeddings,
@@ -129,23 +132,35 @@ async fn main() -> Result<(), Box<dyn Error>> {
             .filter_map(|(k, v)| if *v { Some(k.as_str()) } else { None })
             .collect();
 
+        let rate =
+            rate_recommendation(interest.clone(), book_info.to_string(), &openai_client).await?;
+
         if rentable_locations.is_empty() {
-            println!("{}. {}: {} (현재 대여 불가)", index + 1, book_id, book_info);
-        } else {
-            let locations_str = rentable_locations.join(", ");
             println!(
-                "{}. {}: {} (대여 위치: {})",
+                "{}. {}: {} (현재 대여 불가, 관련성: {})",
                 index + 1,
                 book_id,
                 book_info,
-                locations_str
+                rate
+            );
+        } else {
+            let locations_str = rentable_locations.join(", ");
+            println!(
+                "{}. {}: {} (대여 위치: {}, 관련성: {})",
+                index + 1,
+                book_id,
+                book_info,
+                locations_str,
+                rate
             );
         }
     }
 
-    println!("\n추천 RISS 목록:");
-    for (index, (riss_id, riss_info)) in recommended_riss.iter().enumerate() {
-        println!("{}. {}: {}", index + 1, riss_id, riss_info);
+    if !recommended_riss.is_empty() {
+        println!("\n추천 RISS 목록:");
+        for (index, (riss_id, riss_info)) in recommended_riss.iter().enumerate() {
+            println!("{}. {}: {}", index + 1, riss_id, riss_info);
+        }
     }
 
     println!("\nPress Enter to exit...");
@@ -164,7 +179,8 @@ async fn generate_query(
         .messages([
             ChatCompletionRequestMessageArgs::default()
                 .role(Role::System)
-                .content("You are an AI trained to generate search queries for book titles based on user prompts. Your goal is to return a list of unique keywords that are highly relevant to the user's interest but cover a wide range of material within the topic, specifically focusing on higher education level material. Make sure each keyword is relevant to the topic of interest by combining the topic keyword with other relevant keywords, including relevant mathematical concepts when appropriate. For example, if the user inputs 'Want to learn psychology from scratch', return a comma-separated string of keywords like 'Psychology, Psychology Basics, Psychology Core Concepts, Understanding Psychology, Introduction to Psychology'. For a topic like 'Artificial Intelligence Basics', include keywords such as 'Linear Algebra, Probability, Statistics, Calculus'. Must contain at least the core keyword, in there it was Psychology (심리학)")
+                // .content("You are an AI trained to generate search queries for book titles based on user prompts. Your goal is to return a list of unique keywords that are highly relevant to the user's interest but cover a wide range of material within the topic, specifically focusing on higher education level material. Make sure each keyword is relevant to the topic of interest by combining the topic keyword with other relevant keywords, including relevant mathematical concepts when appropriate. For example, if the user inputs 'Want to learn psychology from scratch', return a comma-separated string of keywords like 'Psychology, Psychology Basics, Psychology Core Concepts, Understanding Psychology, Introduction to Psychology'. For a topic like 'Artificial Intelligence Basics', include keywords such as 'Linear Algebra, Probability, Statistics, Calculus'. Must contain at least the core keyword, in there it was Psychology (심리학)")
+                .content(GPT)
                 .build()?,
             ChatCompletionRequestMessageArgs::default()
                 .role(Role::User)
@@ -184,6 +200,33 @@ async fn generate_query(
         .map(|s| s.trim().to_string())
         .collect();
     Ok(queries)
+}
+
+async fn rate_recommendation(
+    interest: String,
+    recommendation: String,
+    openai_client: &Client,
+) -> Result<String, Box<dyn Error>> {
+    let request = CreateChatCompletionRequestArgs::default()
+        .max_tokens(4_u16)
+        .model("gpt-3.5-turbo")
+        .messages([
+            ChatCompletionRequestMessageArgs::default()
+                .role(Role::System)
+                // .content("You are an AI trained to generate search queries for book titles based on user prompts. Your goal is to return a list of unique keywords that are highly relevant to the user's interest but cover a wide range of material within the topic, specifically focusing on higher education level material. Make sure each keyword is relevant to the topic of interest by combining the topic keyword with other relevant keywords, including relevant mathematical concepts when appropriate. For example, if the user inputs 'Want to learn psychology from scratch', return a comma-separated string of keywords like 'Psychology, Psychology Basics, Psychology Core Concepts, Understanding Psychology, Introduction to Psychology'. For a topic like 'Artificial Intelligence Basics', include keywords such as 'Linear Algebra, Probability, Statistics, Calculus'. Must contain at least the core keyword, in there it was Psychology (심리학)")
+                .content(RATE)
+                .build()?,
+            ChatCompletionRequestMessageArgs::default()
+                .role(Role::User)
+                .content(&format!("query: {}\nbook: {}", interest, recommendation))
+                .build()?,
+        ])
+        .build()?;
+
+    let response = openai_client.chat().create(request).await?;
+
+    let query_text = response.choices[0].message.content.clone();
+    Ok(query_text)
 }
 
 async fn fetch_books_with_embeddings(
@@ -290,7 +333,7 @@ async fn fetch_books(
     keyword: &str,
     reqwest_client: &ReqwestClient,
 ) -> Result<Vec<Value>, Box<dyn Error>> {
-    let url = format!("https://library.ajou.ac.kr/pyxis-api/1/collections/1/search?all=1|k|a|{}&facet=false&max=10", keyword);
+    let url = format!("https://library.ajou.ac.kr/pyxis-api/1/collections/1/search?all=1|k|a|{}&facet=false&max=15", keyword);
     let response = reqwest_client
         .get(&url)
         .send()
@@ -311,7 +354,7 @@ async fn fetch_riss(
     reqwest_client: &ReqwestClient,
 ) -> Result<Vec<Value>, Box<dyn Error>> {
     let url = format!(
-        "https://library.ajou.ac.kr/pyxis-api/mashup-riss/T/{}?max=10",
+        "https://library.ajou.ac.kr/pyxis-api/mashup-riss/T/{}?max=15",
         keyword
     );
     let response = reqwest_client
