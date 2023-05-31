@@ -1,14 +1,12 @@
 use std::collections::HashMap;
 
 use actix_web::{
-    get, post,
+    post,
     web::{self, Json},
-    App, HttpResponse, HttpServer, Responder,
+    HttpResponse, Responder,
 };
-use async_openai::Client;
-use futures::{select, stream::StreamExt, TryStreamExt};
-use futures::{stream::FuturesUnordered, TryFutureExt};
-use reqwest::Client as ReqwestClient;
+use futures::stream::FuturesUnordered;
+use futures::stream::StreamExt;
 use serde_json::json;
 
 use crate::utils::fetch::*;
@@ -31,12 +29,18 @@ struct RecommendedBook {
     details: String,
 }
 
+#[derive(Serialize)]
+struct RecommendedRISS {
+    title: String,
+    publisher: String,
+}
+
 #[post("/book")]
 async fn recommend_book(info: Json<RecommendInfo>) -> impl Responder {
     let k = info.k;
     let interest = (*info.interest).trim();
     let openai_client = async_openai::Client::new().with_api_key(&info.api);
-    let queries = generate_query(interest, &openai_client).await.unwrap();
+    let queries = generate_query(interest, &openai_client).await;
     let queries_clone = queries.clone();
 
     let mut book_embeddings = HashMap::new();
@@ -89,7 +93,7 @@ async fn recommend_book(info: Json<RecommendInfo>) -> impl Responder {
         .unwrap();
 
     let recommended_books = recommend_books(
-        student_embedding.clone(),
+        student_embedding,
         book_embeddings,
         book_id_to_data,
         k.into(),
@@ -108,7 +112,7 @@ async fn recommend_book(info: Json<RecommendInfo>) -> impl Responder {
 
     HttpResponse::Ok().json(json!({
         "queries": queries,
-        "recommended_books": recommended_books,
+        "recommendation": recommended_books,
     }))
 }
 
@@ -117,7 +121,8 @@ async fn recommend_riss(info: Json<RecommendInfo>) -> impl Responder {
     let k = info.k;
     let interest = (*info.interest).trim();
     let openai_client = async_openai::Client::new().with_api_key(&info.api);
-    let queries = generate_query(interest, &openai_client).await.unwrap();
+    let queries = generate_query(interest, &openai_client).await;
+    let queries_clone = queries.clone();
 
     let mut riss_embeddings = HashMap::new();
     let mut riss_id_to_data = HashMap::new();
@@ -155,7 +160,20 @@ async fn recommend_riss(info: Json<RecommendInfo>) -> impl Responder {
         0.8,
     );
 
-    format!("Queries: {:#?}, {:#?}", queries, recommended_riss)
+    let queries: Vec<Query> = queries_clone
+        .into_iter()
+        .map(|q| Query { query: q })
+        .collect();
+
+    let recommended_riss: Vec<RecommendedRISS> = recommended_riss
+        .into_iter()
+        .map(|(title, publisher)| RecommendedRISS { title, publisher })
+        .collect();
+
+    HttpResponse::Ok().json(json!({
+        "queries": queries,
+        "recommendation": recommended_riss,
+    }))
 }
 
 pub fn init_recommender(cfg: &mut web::ServiceConfig) {

@@ -13,8 +13,11 @@ use futures::TryStreamExt;
 use lazy_static::lazy_static;
 use serde_json::Value;
 
-const GPT: &'static str = "You are a sophisticated AI, built to formulate precise keywords for book search queries. Your job is to devise keywords deeply connected to the user's interest, with a focus on educational material. Construct each keyword alongside pertinent ones and directly related mathematical concepts when relevant. Each keyword should be followed by its English translation. For example, if a user is interested in 'Quantum Physics', your keywords might be '양자 물리, Quantum Physics, 양자역학, Quantum Mechanics'. Remember to always include the main keyword. Now, generate keywords for the user's query.";
-const RATE: &'static str = "As an AI, I'll evaluate how closely your study query matches a book's content, considering its depth, specificity, and direct relation. Provide your query and book title, and I'll score its relevance from 1 to 10 - with 1 being minimally relevant and 10 highly relevant. Your output MUST be a 'rating number' only, without any extra text.";
+use cached::proc_macro::cached;
+use cached::SizedCache;
+
+const GPT: &str = "You are a sophisticated AI, built to formulate precise keywords for book search queries. Your job is to devise keywords deeply connected to the user's interest, with a focus on educational material. Construct each keyword alongside pertinent ones and directly related mathematical concepts when relevant. Each keyword should be followed by its English translation. For example, if a user is interested in 'Quantum Physics', your keywords might be '양자 물리, Quantum Physics, 양자역학, Quantum Mechanics'. Remember to always include the main keyword. Now, generate keywords for the user's query.";
+// const RATE: &str = "As an AI, I'll evaluate how closely your study query matches a book's content, considering its depth, specificity, and direct relation. Provide your query and book title, and I'll score its relevance from 1 to 10 - with 1 being minimally relevant and 10 highly relevant. Your output MUST be a 'rating number' only, without any extra text.";
 
 lazy_static! {
     static ref HTTP_CLIENT: reqwest::Client = reqwest::Client::builder()
@@ -24,10 +27,12 @@ lazy_static! {
         .unwrap();
 }
 
-pub async fn generate_query(
-    interest: &str,
-    openai_client: &async_openai::Client,
-) -> Result<Vec<String>, anyhow::Error> {
+#[cached(
+    type = "SizedCache<String, Vec<String>>",
+    create = "{ SizedCache::with_size(100) }",
+    convert = r#"{ interest.to_lowercase() }"#
+)]
+pub async fn generate_query(interest: &str, openai_client: &async_openai::Client) -> Vec<String> {
     println!("Starting...");
     let request = CreateChatCompletionRequestArgs::default()
     .max_tokens(150_u16)
@@ -37,18 +42,18 @@ pub async fn generate_query(
         .role(Role::System)
         // .content("You are an AI trained to generate search queries for book titles based on user prompts. Your goal is to return a list of unique keywords that are highly relevant to the user's interest but cover a wide range of material within the topic, specifically focusing on higher education level material. Make sure each keyword is relevant to the topic of interest by combining the topic keyword with other relevant keywords, including relevant mathematical concepts when appropriate. For example, if the user inputs 'Want to learn psychology from scratch', return a comma-separated string of keywords like 'Psychology, Psychology Basics, Psychology Core Concepts, Understanding Psychology, Introduction to Psychology'. For a topic like 'Artificial Intelligence Basics', include keywords such as 'Linear Algebra, Probability, Statistics, Calculus'. Must contain at least the core keyword, in there it was Psychology (심리학)")
         .content(GPT)
-        .build()?,
+        .build().unwrap(),
         ChatCompletionRequestMessageArgs::default()
         .role(Role::User)
         .content(&format!(
                     "Generate a bilingual search query (Korean and English) for the following interest: {}",
                     interest
                 ))
-                .build()?,
+                .build().unwrap(),
         ])
-        .build()?;
+        .build().unwrap();
 
-    let response = openai_client.chat().create(request).await?;
+    let response = openai_client.chat().create(request).await.unwrap();
     println!("Loaded...");
 
     let query_text = response.choices[0].message.content.clone();
@@ -56,7 +61,7 @@ pub async fn generate_query(
         .split(", ")
         .map(|s| s.trim().to_string())
         .collect();
-    Ok(queries)
+    queries
 }
 
 pub async fn fetch_books_with_embeddings(
