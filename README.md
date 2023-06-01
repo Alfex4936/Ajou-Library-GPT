@@ -1,6 +1,9 @@
 # AjouLibraGPT
 
-아주대학교 도서관 도서 추천 시스템
+아주대학교 도서관 도서 추천 시스템 (CLI + API)
+
+![web](https://github.com/Alfex4936/Ajou-Library-GPT/assets/2356749/cef8c34e-6e6e-4dc1-80b7-7543a9839597)
+
 
 ```md
 ## 영어 검색 (English search)
