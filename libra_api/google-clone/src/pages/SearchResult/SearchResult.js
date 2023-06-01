@@ -39,9 +39,8 @@ function SearchResult() {
               <SearchOption title="RISS" icon={<MenuBook />} />
             </div>
             {/* <div className="searchResult__optionsRight">
-                            <SearchOption title="Settings" />
-                            <SearchOption title="Tools" />
-                        </div> */}
+              <SearchOption title="Settings" />
+            </div> */}
           </div>
         </div>
       </div>
@@ -55,14 +54,22 @@ function SearchResult() {
             </div>
           ) : (
             <>
-              <p className="searchResult__itemsCount">
+              <p
+                className="searchResult__itemsCount"
+                style={{ whiteSpace: "pre-line" }}
+              >
                 About {data?.recommendation.length} results for {term}
+                <br />
+                Queries:
+                {data?.queries.map((query, index) => (
+                  <span key={index}>{query.query} </span>
+                ))}
               </p>
 
               {data?.recommendation.map(item => (
                 <div className="searchResult__item" key={item.book_id}>
                   <a href="#" className="searchResult__itemLink">
-                    {item.book_id}
+                    {item.book_id} {item.rentable ? `: ${item.rent_place}` : ""}
                     <ArrowDropDownIcon />
                   </a>
 
