@@ -4,8 +4,7 @@
 
 > React.js (Frontend) + Rust (backend) + OpenAI's GPT-4 & text-embedding
 
-![web](https://github.com/Alfex4936/Ajou-Library-GPT/assets/2356749/2c6e5444-3e61-4147-b177-481c25f4430a)
-
+![ggg](https://github.com/Alfex4936/Ajou-Library-GPT/assets/2356749/0c2168fb-6628-4597-876b-1663a9eaa321)
 
 ```md
 ## 영어 검색 (English search)

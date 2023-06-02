@@ -10,7 +10,7 @@ import { Button } from "@material-ui/core";
 import "./Search.css";
 
 function Search({ hideButtons = false }) {
-  const [{ term }, dispatch] = useStateValue();
+  const [{ term, error }, dispatch] = useStateValue();
 
   const [input, setInput] = useState(term || "");
 
@@ -31,7 +31,9 @@ function Search({ hideButtons = false }) {
       term: input,
     });
 
-    history.push("/search");
+    if (!error) {
+      history.push("/search");
+    }
   };
 
   return (
