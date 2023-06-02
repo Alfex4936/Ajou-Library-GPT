@@ -1,16 +1,22 @@
+// SearchOption.js
 import React from "react";
-import { Link } from "react-router-dom";
 
 import "./SearchOption.css";
 
-// SearchOption.js
-function SearchOption({ title, icon, setSelectedTab }) {
+function SearchOption({ title, icon, setSelectedTab, activeTab, loading }) {
+  console.log(title, activeTab);
   return (
-    <div className="searchOption" onClick={() => setSelectedTab(title)}>
+    <div
+      className={`searchOption ${title === activeTab ? "active" : ""}`}
+      onClick={() => {
+        if (!loading) {
+          setSelectedTab(title);
+        }
+      }}
+    >
       {icon && icon}
       <p>{title}</p>
     </div>
   );
 }
-
 export default SearchOption;

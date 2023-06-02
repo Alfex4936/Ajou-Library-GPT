@@ -1,0 +1,42 @@
+/* BookDetail.css */
+.bookDetail {
+  border: 1px solid #ddd;
+  padding: 2em;
+  margin-bottom: 3em;
+  margin-top: 2em;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+}
+
+.bookDetail:hover {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.bookDetail__title {
+  font-size: 1.5em;
+  margin-bottom: 0.5em;
+}
+
+.bookDetail__author {
+  font-size: 1.2em;
+  color: #555;
+}
+
+.bookDetail__publisher {
+  font-size: 1em;
+  color: #777;
+}
+
+.bookDetail__rent {
+  font-size: 1em;
+  color: #333;
+  font-weight: bold;
+  margin-top: 1em;
+}
+
+.bookDetail__moreInfo {
+  display: inline-block;
+  margin-top: 1em;
+  color: #337ab7;
+  text-decoration: none;
+}

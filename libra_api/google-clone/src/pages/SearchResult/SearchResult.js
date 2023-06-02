@@ -1,5 +1,5 @@
 import React from "react";
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 
 import SearchIcon from "@material-ui/icons/Search";
@@ -7,6 +7,7 @@ import CircularProgress from "@material-ui/core/CircularProgress"; // import the
 
 import BookIcon from "@material-ui/icons/Book";
 import MenuBook from "@material-ui/icons/MenuBook";
+import CloseIcon from "@material-ui/icons/Close";
 import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 
 import useLibraSearch from "../../hooks/useGoogleSearch/useGoogleSearch";
@@ -16,9 +17,13 @@ import { actionTypes } from "../../reducer";
 import Search from "../../components/Search/Search";
 import SearchOption from "../../components/SearchOption/SearchOption";
 
+import BookDetail from "../../components/Book/BookDetail";
+import RissDetail from "../../components/RISS/RISSDetail";
+
 import Snackbar from "@material-ui/core/Snackbar";
 import IconButton from "@material-ui/core/IconButton";
-import CloseIcon from "@material-ui/icons/Close";
+
+import Divider from "@material-ui/core/Divider";
 
 import "./SearchResult.css";
 
@@ -30,7 +35,7 @@ function SearchResult() {
   const [selectedTab, setSelectedTab] = useState("All");
 
   // Add a new piece of state for the filtered results
-  const [filteredData, setFilteredData] = useState([]);
+  // const [filteredData, setFilteredData] = useState([]);
 
   const handleCloseError = (event, reason) => {
     if (reason === "clickaway") {
@@ -44,20 +49,35 @@ function SearchResult() {
   };
 
   // When data or selectedTab changes, filter the data
-  useEffect(() => {
+  // useEffect(() => {
+  //   switch (selectedTab) {
+  //     case "Books":
+  //       console.log("book: ", data);
+  //       setFilteredData(data?.books); // Adjust the condition to your needs
+  //       break;
+  //     case "RISS":
+  //       console.log("riss: ", data);
+  //       setFilteredData(data?.riss); // Adjust the condition to your needs
+  //       break;
+  //     default:
+  //       console.log("All: ", data);
+  //       setFilteredData(data);
+  //       break;
+  //   }
+  // }, [data, selectedTab]);
+
+  // useMemo to memoize the calculation of filtered data
+  const filteredData = useMemo(() => {
     switch (selectedTab) {
       case "Books":
         console.log("book: ", data);
-        setFilteredData(data?.books); // Adjust the condition to your needs
-        break;
+        return data?.books || [];
       case "RISS":
         console.log("riss: ", data);
-        setFilteredData(data?.riss); // Adjust the condition to your needs
-        break;
+        return data?.riss || [];
       default:
         console.log("All: ", data);
-        setFilteredData(data);
-        break;
+        return data || [];
     }
   }, [data, selectedTab]);
 
@@ -77,16 +97,22 @@ function SearchResult() {
                 title="All"
                 icon={<SearchIcon />}
                 setSelectedTab={setSelectedTab}
+                activeTab={selectedTab}
+                loading={loading}
               />
               <SearchOption
                 title="Books"
                 icon={<BookIcon />}
                 setSelectedTab={setSelectedTab}
+                activeTab={selectedTab}
+                loading={loading}
               />
               <SearchOption
                 title="RISS"
                 icon={<MenuBook />}
                 setSelectedTab={setSelectedTab}
+                activeTab={selectedTab}
+                loading={loading}
               />
             </div>
             {/* <div className="searchResult__optionsRight">
@@ -132,35 +158,33 @@ function SearchResult() {
                     Array.isArray(filteredData?.books) &&
                     Array.isArray(filteredData?.riss) && (
                       <>
+                        <Divider
+                          style={{ marginTop: "16px", marginBottom: "16px" }}
+                          variant="middle"
+                        />
+
+                        <a href="#" className="searchResult__itemLink">
+                          Books -
+                          <ArrowDropDownIcon />
+                        </a>
+
                         {filteredData?.books.map(item => (
-                          <div
-                            className="searchResult__item"
+                          <BookDetail
                             key={item.book_id}
-                          >
-                            <a href="#" className="searchResult__itemLink">
-                              {item.book_id}
-                              {item.rentable
-                                ? `: ${item.rent_place}`
-                                : "- 대여 불가"}
-                              <ArrowDropDownIcon />
-                            </a>
-
-                            <a className="searchResult__itemTitle">
-                              <h2>{item.details}</h2>
-                            </a>
-                          </div>
+                            bookId={item.book_id}
+                            details={item.details}
+                            rentPlace={item.rent_place}
+                            rentable={item.rentable}
+                          />
                         ))}
-                        {filteredData?.riss.map(item => (
-                          <div className="searchResult__item" key={item.title}>
-                            <a href="#" className="searchResult__itemLink">
-                              {item.title}
-                              <ArrowDropDownIcon />
-                            </a>
 
-                            <a className="searchResult__itemTitle">
-                              <h2>{item.publisher}</h2>
-                            </a>
-                          </div>
+                        <a href="#" className="searchResult__itemLink">
+                          RISS -
+                          <ArrowDropDownIcon />
+                        </a>
+
+                        {filteredData?.riss.map(item => (
+                          <RissDetail id={item.id} details={item.details} />
                         ))}
                       </>
                     )}
@@ -168,34 +192,19 @@ function SearchResult() {
                   {selectedTab === "Books" &&
                     Array.isArray(filteredData) &&
                     filteredData.map(item => (
-                      <div className="searchResult__item" key={item.book_id}>
-                        <a href="#" className="searchResult__itemLink">
-                          {item.book_id}
-                          {item.rentable
-                            ? `: ${item.rent_place}`
-                            : "- 대여 불가"}
-                          <ArrowDropDownIcon />
-                        </a>
-
-                        <a className="searchResult__itemTitle">
-                          <h2>{item.details}</h2>
-                        </a>
-                      </div>
+                      <BookDetail
+                        key={item.book_id}
+                        bookId={item.book_id}
+                        details={item.details}
+                        rentPlace={item.rent_place}
+                        rentable={item.rentable}
+                      />
                     ))}
 
                   {selectedTab === "RISS" &&
                     Array.isArray(filteredData) &&
                     filteredData.map(item => (
-                      <div className="searchResult__item" key={item.title}>
-                        <a href="#" className="searchResult__itemLink">
-                          {item.title}
-                          <ArrowDropDownIcon />
-                        </a>
-
-                        <a className="searchResult__itemTitle">
-                          <h2>{item.publisher}</h2>
-                        </a>
-                      </div>
+                      <RissDetail id={item.id} details={item.details} />
                     ))}
                 </>
               ) : (

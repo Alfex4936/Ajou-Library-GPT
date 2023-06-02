@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import Search from "../../components/Search/Search";
 
 import AppsIcon from "@material-ui/icons/Apps";
+import SettingsIcon from "@material-ui/icons/Settings";
 import { Avatar } from "@material-ui/core";
 import { Slider } from "@material-ui/core";
 import { actionTypes } from "../../reducer";
@@ -61,7 +62,7 @@ function Home() {
       <div className="home__header">
         <div className="home__headerRight">
           <Link to="#" onClick={handleClickOpen}>
-            Settings
+            <SettingsIcon />
           </Link>
         </div>
         {/* <div className="home__headerRight">

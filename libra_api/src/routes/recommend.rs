@@ -34,8 +34,8 @@ struct RecommendedBook {
 
 #[derive(Serialize)]
 struct RecommendedRISS {
-    title: String,
-    publisher: String,
+    id: String,
+    details: String,
 }
 
 #[post("/book")]
@@ -200,7 +200,7 @@ async fn recommend_riss(info: Json<RecommendInfo>) -> impl Responder {
 
     let recommended_riss: Vec<RecommendedRISS> = recommended_riss
         .into_iter()
-        .map(|(title, publisher)| RecommendedRISS { title, publisher })
+        .map(|(id, details)| RecommendedRISS { id, details })
         .collect();
 
     HttpResponse::Ok().json(json!({
@@ -324,7 +324,7 @@ async fn recommend_all(info: Json<RecommendInfo>) -> impl Responder {
 
     let recommended_riss: Vec<RecommendedRISS> = recommended_riss
         .into_iter()
-        .map(|(title, publisher)| RecommendedRISS { title, publisher })
+        .map(|(id, details)| RecommendedRISS { id, details })
         .collect();
 
     HttpResponse::Ok().json(json!({
