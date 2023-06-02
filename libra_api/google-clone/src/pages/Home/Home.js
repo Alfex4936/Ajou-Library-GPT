@@ -78,19 +78,6 @@ function Home() {
         <div className="home__inputContainer">
           <Search hideButtons />
         </div>
-
-        <Slider
-          style={{ width: "65vh", margin: "0 auto" }}
-          aria-label="K"
-          defaultValue={numResults}
-          onChangeCommitted={onNumResultsChange}
-          // getAriaValueText={valuetext}
-          valueLabelDisplay="auto"
-          step={1}
-          marks
-          min={1}
-          max={10}
-        />
       </div>
 
       <Dialog
@@ -110,6 +97,20 @@ function Home() {
             type="text"
             onChange={handleKeyChange}
             fullWidth
+          />
+
+          <DialogContentText>Please select K</DialogContentText>
+          <Slider
+            style={{ width: "50vh", margin: "0 auto" }}
+            aria-label="K"
+            defaultValue={numResults}
+            onChangeCommitted={onNumResultsChange}
+            // getAriaValueText={valuetext}
+            valueLabelDisplay="auto"
+            step={1}
+            marks
+            min={1}
+            max={10}
           />
         </DialogContent>
         <DialogActions>
