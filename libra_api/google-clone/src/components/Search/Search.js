@@ -39,7 +39,11 @@ function Search({ hideButtons = false }) {
   return (
     <form className="search">
       <div className="search__input">
-        <SearchIcon onClick={search} className="search__inputIcon" />
+        <SearchIcon
+          style={{ cursor: "pointer" }}
+          onClick={search}
+          className="search__inputIcon"
+        />
         <input value={input} onChange={e => setInput(e.target.value)} />
         <MicIcon />
       </div>

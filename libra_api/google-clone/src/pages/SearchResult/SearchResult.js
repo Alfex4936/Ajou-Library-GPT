@@ -1,5 +1,5 @@
 import React from "react";
-import { useState, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 
 import SearchIcon from "@material-ui/icons/Search";
@@ -21,11 +21,17 @@ import BookDetail from "../../components/Book/BookDetail";
 import RissDetail from "../../components/RISS/RISSDetail";
 
 import Snackbar from "@material-ui/core/Snackbar";
+import MuiAlert from "@material-ui/lab/Alert";
 import IconButton from "@material-ui/core/IconButton";
 
 import Divider from "@material-ui/core/Divider";
+import Chip from "@material-ui/core/Chip";
 
 import "./SearchResult.css";
+
+function Alert(props) {
+  return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
 
 function SearchResult() {
   const [{ term, error }, dispatch] = useStateValue();
@@ -33,6 +39,8 @@ function SearchResult() {
 
   // Add a new piece of state for the selected tab
   const [selectedTab, setSelectedTab] = useState("All");
+  const [openSuccess, setOpenSuccess] = useState(false);
+  const [loadingStarted, setLoadingStarted] = useState(false);
 
   // Add a new piece of state for the filtered results
   // const [filteredData, setFilteredData] = useState([]);
@@ -48,23 +56,13 @@ function SearchResult() {
     });
   };
 
-  // When data or selectedTab changes, filter the data
-  // useEffect(() => {
-  //   switch (selectedTab) {
-  //     case "Books":
-  //       console.log("book: ", data);
-  //       setFilteredData(data?.books); // Adjust the condition to your needs
-  //       break;
-  //     case "RISS":
-  //       console.log("riss: ", data);
-  //       setFilteredData(data?.riss); // Adjust the condition to your needs
-  //       break;
-  //     default:
-  //       console.log("All: ", data);
-  //       setFilteredData(data);
-  //       break;
-  //   }
-  // }, [data, selectedTab]);
+  useEffect(() => {
+    if (loading) {
+      setLoadingStarted(true);
+    } else if (loadingStarted && !error) {
+      setOpenSuccess(true);
+    }
+  }, [loading, error, loadingStarted]);
 
   // useMemo to memoize the calculation of filtered data
   const filteredData = useMemo(() => {
@@ -86,7 +84,7 @@ function SearchResult() {
       <div className="searchResult__header">
         <Link to="/">
           <img
-            className="searchResult__logo"
+            className="searchResult__logo pulse"
             src="logo_search.png"
             alt="Logo"
           />
@@ -152,9 +150,14 @@ function SearchResult() {
                         (filteredData?.riss?.length || 0)}{" "}
                     results for {term}
                     <br />
-                    Queries:
+                    <br />
                     {data?.queries.map((query, index) => (
-                      <span key={index}>{query.query} </span>
+                      <Chip
+                        key={index}
+                        label={query.query}
+                        variant="outlined"
+                      />
+                      // <span key={index}>{query.query} </span>
                     ))}
                   </p>
 
@@ -220,6 +223,30 @@ function SearchResult() {
           )}
         </div>
       )}
+
+      <Snackbar
+        open={openSuccess}
+        anchorOrigin={{
+          vertical: "bottom",
+          horizontal: "left",
+        }}
+        autoHideDuration={5000}
+        onClose={() => {
+          handleCloseError();
+          setOpenSuccess(false);
+        }}
+      >
+        <Alert
+          onClose={() => {
+            handleCloseError();
+            setOpenSuccess(false);
+          }}
+          severity="success"
+          sx={{ width: "100%" }}
+        >
+          Successfully loaded!
+        </Alert>
+      </Snackbar>
 
       <Snackbar
         anchorOrigin={{
