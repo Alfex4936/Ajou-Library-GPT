@@ -85,7 +85,11 @@ function SearchResult() {
     <div className="searchResult">
       <div className="searchResult__header">
         <Link to="/">
-          <img className="searchResult__logo" src="logo.png" alt="Logo" />
+          <img
+            className="searchResult__logo"
+            src="logo_search.png"
+            alt="Logo"
+          />
         </Link>
 
         <div className="searchResult__headerBody">

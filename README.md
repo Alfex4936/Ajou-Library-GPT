@@ -4,7 +4,7 @@
 
 > React.js (Frontend) + Rust (backend) + OpenAI's GPT-4 & text-embedding
 
-![gif](https://github.com/Alfex4936/Ajou-Library-GPT/assets/2356749/54c129a0-d8bd-4070-afe3-e873ad1b2687)
+![gif](https://github.com/Alfex4936/Ajou-Library-GPT/assets/2356749/345f9a1f-14da-4447-a2b8-a6b6cbf0310d)
 
 ```md
 ## 영어 검색 (English search)
@@ -51,12 +51,12 @@
 
 아주대학교 도서관 도서 추천 시스템은 관심사에 기반하여 도서관에 있는 도서를 추천해 주는 프로그램입니다.
 
-GPT-4와 SentenceTransformer를 활용하여 사용자의 관심사와 가장 유사한 도서를 찾아 추천해 드립니다.
+GPT-4와 SentenceTransformer/text-embedding-ada-002를 활용하여 사용자의 관심사와 가장 유사한 도서를 찾아 추천해 드립니다.
 
 ## 사용 기술
 
 - GPT-4: 사용자의 관심사에 기반한 도서 검색 쿼리 생성
-- SentenceTransformer: 도서와 사용자의 관심사 간의 유사도를 계산
+- SentenceTransformer/text-embedding-ada-002: 도서와 사용자의 관심사 간의 유사도를 계산
 - aiohttp, asyncio: 비동기적으로 도서 정보와 대여 상태를 가져옴
 - sklearn: 코사인 유사도 계산
 
