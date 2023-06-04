@@ -7,7 +7,9 @@ function SearchOption({ title, icon, setSelectedTab, activeTab, loading }) {
   console.log(title, activeTab);
   return (
     <div
-      className={`searchOption ${title === activeTab ? "active" : ""}`}
+      className={`searchOption ${
+        !loading && title === activeTab ? "active" : ""
+      }`}
       onClick={() => {
         if (!loading) {
           setSelectedTab(title);
