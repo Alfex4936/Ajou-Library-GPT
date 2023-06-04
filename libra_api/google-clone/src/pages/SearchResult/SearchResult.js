@@ -10,7 +10,7 @@ import MenuBook from "@material-ui/icons/MenuBook";
 import CloseIcon from "@material-ui/icons/Close";
 import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 
-import useLibraSearch from "../../hooks/useGoogleSearch/useGoogleSearch";
+import useLibraSearch from "../../hooks/useLibraSearch/useLibraSearch";
 import { useStateValue } from "../../StateContext";
 import { actionTypes } from "../../reducer";
 
@@ -41,6 +41,14 @@ function SearchResult() {
   const [selectedTab, setSelectedTab] = useState("All");
   const [openSuccess, setOpenSuccess] = useState(false);
   const [loadingStarted, setLoadingStarted] = useState(false);
+  // Add a new piece of state for tracking tab clicks
+  const [tabClickCount, setTabClickCount] = useState(0);
+
+  // Use a function to set selectedTab state and increase tabClickCount
+  const setSelectedTabAndUpdateClickCount = newTab => {
+    setSelectedTab(newTab);
+    setTabClickCount(prevCount => prevCount + 1);
+  };
 
   // Add a new piece of state for the filtered results
   // const [filteredData, setFilteredData] = useState([]);
@@ -63,6 +71,10 @@ function SearchResult() {
       setOpenSuccess(true);
     }
   }, [loading, error, loadingStarted]);
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "auto" }); // Use 'auto' to override ongoing scrolls
+  }, [tabClickCount]); // Use tabClickCount as dependency
 
   // useMemo to memoize the calculation of filtered data
   const filteredData = useMemo(() => {
@@ -98,21 +110,21 @@ function SearchResult() {
               <SearchOption
                 title="All"
                 icon={<SearchIcon />}
-                setSelectedTab={setSelectedTab}
+                setSelectedTab={setSelectedTabAndUpdateClickCount}
                 activeTab={selectedTab}
                 loading={loading}
               />
               <SearchOption
                 title="Books"
                 icon={<BookIcon />}
-                setSelectedTab={setSelectedTab}
+                setSelectedTab={setSelectedTabAndUpdateClickCount}
                 activeTab={selectedTab}
                 loading={loading}
               />
               <SearchOption
                 title="RISS"
                 icon={<MenuBook />}
-                setSelectedTab={setSelectedTab}
+                setSelectedTab={setSelectedTabAndUpdateClickCount}
                 activeTab={selectedTab}
                 loading={loading}
               />
@@ -153,6 +165,7 @@ function SearchResult() {
                     <br />
                     {data?.queries.map((query, index) => (
                       <Chip
+                        style={{ marginRight: "10px", marginBottom: "10px" }}
                         key={index}
                         label={query.query}
                         variant="outlined"
