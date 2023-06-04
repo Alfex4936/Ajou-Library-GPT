@@ -18,7 +18,7 @@ import Search from "../../components/Search/Search";
 import SearchOption from "../../components/SearchOption/SearchOption";
 
 import BookDetail from "../../components/Book/BookDetail";
-import RissDetail from "../../components/RISS/RISSDetail";
+import RissDetail from "../../components/RISS/RissDetail";
 
 import Snackbar from "@material-ui/core/Snackbar";
 import MuiAlert from "@material-ui/lab/Alert";
