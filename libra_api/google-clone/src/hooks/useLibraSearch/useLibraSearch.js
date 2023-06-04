@@ -11,7 +11,7 @@ const useLibraSearch = term => {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      fetch("/api/recommend/all", {
+      fetch(process.env.API_ADDRESS, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
