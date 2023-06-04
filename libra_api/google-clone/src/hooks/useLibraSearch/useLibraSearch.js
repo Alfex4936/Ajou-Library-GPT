@@ -11,7 +11,7 @@ const useLibraSearch = term => {
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
-      fetch(process.env.API_ADDRESS, {
+      fetch(process.env.REACT_APP_API_ADDRESS, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -30,7 +30,7 @@ const useLibraSearch = term => {
         .catch(error => {
           dispatch({
             type: actionTypes.SET_ERROR,
-            error: error.message,
+            error: error,
           });
           console.error("Error:", error);
           setLoading(false);

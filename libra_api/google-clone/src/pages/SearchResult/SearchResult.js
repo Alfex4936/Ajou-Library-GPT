@@ -267,7 +267,7 @@ function SearchResult() {
           horizontal: "left",
         }}
         open={!!error} // <-- the snackbar is open when there is an error
-        autoHideDuration={3000} // <-- the snackbar will automatically close after 3 seconds
+        autoHideDuration={5000} // <-- the snackbar will automatically close after 3 seconds
         onClose={handleCloseError} // <-- you need a function to close the snackbar
         message={error} // <-- the error message will be displayed in the snackbar
         action={
