@@ -74,9 +74,7 @@ function Home() {
       </div>
 
       <div className="home__body">
-        <Link to="#">
-          <img src="logo2.png" alt="Logo" />
-        </Link>
+        <img src="logo2.png" alt="Logo" />
         <div className="home__inputContainer">
           <Search hideButtons />
         </div>
