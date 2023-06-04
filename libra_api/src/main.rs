@@ -21,6 +21,15 @@ async fn main() -> std::io::Result<()> {
             .wrap(cors)
             .wrap(middleware::Logger::default()) // Use the default logger for request/response logs
             .wrap(middleware::Compress::default()) // compress responses
+            .wrap(
+                middleware::DefaultHeaders::new()
+                    .add((
+                        "Strict-Transport-Security",
+                        "max-age=31536000; includeSubDomains",
+                    ))
+                    .add(("X-Content-Type-Options", "nosniff"))
+                    .add(("X-Frame-Options", "SAMEORIGIN")),
+            )
             .service(
                 // Mount the notice routes under the "/recommend" path
                 web::scope("/api/recommend").configure(recommend::init_recommender),

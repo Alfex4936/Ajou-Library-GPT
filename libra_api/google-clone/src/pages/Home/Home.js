@@ -1,11 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 
 import Search from "../../components/Search/Search";
 
-import AppsIcon from "@material-ui/icons/Apps";
 import SettingsIcon from "@material-ui/icons/Settings";
-import { Avatar } from "@material-ui/core";
 import { Slider } from "@material-ui/core";
 import { actionTypes } from "../../reducer";
 import { useStateValue } from "../../StateContext";
@@ -21,7 +19,7 @@ import Button from "@material-ui/core/Button";
 import "./Home.css";
 
 function Home() {
-  const [{ _, numResults, openAIKey, error }, dispatch] = useStateValue();
+  const [{ numResults, openAIKey }, dispatch] = useStateValue();
   const [key, setKey] = useState(openAIKey || ""); // will be initialized with the current value of the key in the context
   const [open, setOpen] = useState(false);
 
@@ -47,6 +45,8 @@ function Home() {
       type: actionTypes.SET_OPENAI_KEY,
       openAIKey: key,
     });
+    // Save the OpenAI key to local storage
+    localStorage.setItem("openAIKey", key);
     setOpen(false);
   };
 
@@ -56,6 +56,18 @@ function Home() {
       numResults: value,
     });
   };
+
+  useEffect(() => {
+    // Load the OpenAI key from local storage when the component mounts
+    const savedKey = localStorage.getItem("openAIKey");
+    if (savedKey) {
+      setKey(savedKey);
+      dispatch({
+        type: actionTypes.SET_OPENAI_KEY,
+        openAIKey: savedKey,
+      });
+    }
+  }, [dispatch]);
 
   return (
     <div className="home">

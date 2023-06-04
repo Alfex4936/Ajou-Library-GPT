@@ -1,0 +1,20 @@
+# fly.toml app configuration file generated for ajou-libra on 2023-06-04T17:47:23+09:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = "ajou-libra"
+primary_region = "nrt"
+
+[http_service]
+  internal_port = 8800
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+
+[checks]
+  [checks.alive]
+    type = "tcp"
+    interval = "15s"
+    timeout = "1m0s"
+    grace_period = "5s"
