@@ -3,7 +3,7 @@ import { useStateValue } from "../../StateContext";
 import { actionTypes } from "../../reducer";
 
 const useLibraSearch = term => {
-  const [{ numResults, openAIKey }, dispatch] = useStateValue();
+  const [{ numResults, openAIKey, history }, dispatch] = useStateValue();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -41,6 +41,7 @@ const useLibraSearch = term => {
 
         const result = await response.json();
         setData(result);
+        dispatch({ type: actionTypes.ADD_HISTORY, history: term });
         setError(null); // clear any previous error
       } catch (error) {
         setError(error.message);

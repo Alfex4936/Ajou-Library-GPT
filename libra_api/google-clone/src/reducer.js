@@ -3,6 +3,7 @@ export const initialState = {
   numResults: 5, // set a default value
   openAIKey: "sk-",
   error: null,
+  history: [],
 };
 
 export const actionTypes = {
@@ -11,6 +12,7 @@ export const actionTypes = {
   SET_OPENAI_KEY: "SET_OPENAI_KEY",
   SET_ERROR: "SET_ERROR",
   CLEAR_ERROR: "CLEAR_ERROR",
+  ADD_HISTORY: "ADD_HISTORY",
 };
 
 const reducer = (state, action) => {
@@ -42,6 +44,22 @@ const reducer = (state, action) => {
         ...state,
         error: null, // reset error to null
       };
+    case actionTypes.ADD_HISTORY:
+      // Add new history to the existing history array
+      const newHistory = [...state.history, action.history];
+      // Stringify the array and store it in localStorage
+      localStorage.setItem("searchHistory", JSON.stringify(newHistory));
+
+      return {
+        ...state,
+        history: newHistory,
+      };
+    case actionTypes.SET_HISTORY:
+      return {
+        ...state,
+        history: action.history,
+      };
+
     default:
       return state;
   }

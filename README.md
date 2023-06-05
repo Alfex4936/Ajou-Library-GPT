@@ -2,9 +2,15 @@
 
 아주대학교 도서관 도서 추천 시스템 (CLI + API)
 
+아주대학교 중앙도서관 검색 시스템을 이용해서 어느 검색이든 관련있는 키워드를 검색해 top k 를 추천합니다.
+
+1. GPT-4: 사용자 질문에 맞는 키워드를 생성한다. (관련된 범위 크게 잡음)
+2. text-embedding-ada-002: 텍스트 임베딩
+3. GPT-4 추천 키워드에 맞게 모든 키워드를 중앙도서관에서 검색 후 추천한다. (cosine 유사도)
+
 > React.js (Frontend) + Rust (backend) + OpenAI's GPT-4 & text-embedding
 
-![demo](https://github.com/Alfex4936/Ajou-Library-GPT/assets/2356749/4bb41892-1975-4648-a56f-fa211437107a)
+![demo](https://github.com/Alfex4936/Ajou-Library-GPT/assets/2356749/0c6cea5b-dc2e-4f43-900d-57f345004d80)
 
 ```md
 ## 영어 검색 (English search)

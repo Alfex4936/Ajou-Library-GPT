@@ -1,6 +1,6 @@
 # 아주대학교 도서관 도서 추천 시스템
 
-![demo](https://github.com/Alfex4936/Ajou-Library-GPT/assets/2356749/4bb41892-1975-4648-a56f-fa211437107a)
+![demo](https://github.com/Alfex4936/Ajou-Library-GPT/assets/2356749/0c6cea5b-dc2e-4f43-900d-57f345004d80)
 
 이 프로젝트는 아주대학교 도서관 검색 기능과 결합하여 사용자의 질문에 적합한 쿼리를 생성하고, GPT-4를 이용하여 상위 k개의 도서를 추천하는 시스템입니다. 
 
