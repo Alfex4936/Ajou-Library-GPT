@@ -10,6 +10,7 @@ export const actionTypes = {
   SET_NUM_RESULTS: "SET_NUM_RESULTS",
   SET_OPENAI_KEY: "SET_OPENAI_KEY",
   SET_ERROR: "SET_ERROR",
+  CLEAR_ERROR: "CLEAR_ERROR",
 };
 
 const reducer = (state, action) => {
@@ -35,6 +36,11 @@ const reducer = (state, action) => {
       return {
         ...state,
         error: action.error,
+      };
+    case actionTypes.CLEAR_ERROR:
+      return {
+        ...state,
+        error: null, // reset error to null
       };
     default:
       return state;

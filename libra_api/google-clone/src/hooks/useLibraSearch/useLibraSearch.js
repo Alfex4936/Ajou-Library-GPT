@@ -6,41 +6,53 @@ const useLibraSearch = term => {
   const [{ numResults, openAIKey }, dispatch] = useStateValue();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // useEffect for error
   useEffect(() => {
+    if (error) {
+      dispatch({ type: actionTypes.SET_ERROR, error: error });
+    }
+  }, [error, dispatch]);
+
+  // useEffect for fetchData
+  useEffect(() => {
+    if (!term || !openAIKey) {
+      setError("Invalid search query or OpenAI Key");
+      return;
+    }
+
     const fetchData = async () => {
       setLoading(true);
-      fetch(process.env.REACT_APP_API_ADDRESS, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          k: numResults,
-          api: openAIKey,
-          interest: `${term}`,
-        }),
-      })
-        .then(response => response.json())
-        .then(result => {
-          setData(result);
-          setLoading(false);
-        })
-        .catch(error => {
-          dispatch({
-            type: actionTypes.SET_ERROR,
-            error: error,
-          });
-          console.error("Error:", error);
-          setLoading(false);
+      try {
+        const response = await fetch(process.env.REACT_APP_API_ADDRESS, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            k: numResults,
+            api: openAIKey,
+            interest: `${term}`,
+          }),
         });
+
+        if (!response.ok) {
+          throw new Error(response.statusText);
+        }
+
+        const result = await response.json();
+        setData(result);
+        setError(null); // clear any previous error
+      } catch (error) {
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
     };
 
     fetchData();
   }, [term, numResults, openAIKey]);
 
-  return { data, loading };
+  return { data, loading, error };
 };
 
 export default useLibraSearch;

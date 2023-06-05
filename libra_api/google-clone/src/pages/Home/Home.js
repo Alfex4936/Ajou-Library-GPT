@@ -67,6 +67,9 @@ function Home() {
         openAIKey: savedKey,
       });
     }
+
+    // Clear error when Home component mounts
+    dispatch({ type: actionTypes.CLEAR_ERROR });
   }, [dispatch]);
 
   return (

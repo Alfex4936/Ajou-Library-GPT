@@ -58,10 +58,10 @@ function SearchResult() {
       return;
     }
 
-    dispatch({
-      type: actionTypes.SET_ERROR,
-      error: null,
-    });
+    // dispatch({
+    //   type: actionTypes.SET_ERROR,
+    //   error: null,
+    // });
   };
 
   useEffect(() => {
@@ -103,7 +103,7 @@ function SearchResult() {
         </Link>
 
         <div className="searchResult__headerBody">
-          <Search hideButtons />
+          <Search hideButtons loading={loading} />
 
           <div className="searchResult__options">
             <div className="searchResult__optionsLeft">
@@ -135,7 +135,16 @@ function SearchResult() {
           </div>
         </div>
       </div>
-
+      {!term && (
+        <div className="searchResult__items">
+          <p
+            className="searchResult__itemsCount"
+            style={{ whiteSpace: "pre-line" }}
+          >
+            {error}
+          </p>
+        </div>
+      )}
       {term && (
         <div className="searchResult__items">
           {loading ? (
@@ -229,14 +238,19 @@ function SearchResult() {
                 </>
               ) : (
                 <a className="searchResult__itemTitle">
-                  <h2>No results found.</h2>
+                  <h2>
+                    No results found.
+                    <br />
+                    Check OpenAI API Key.
+                    <br />
+                    {!!error ? `${error}` : ""}
+                  </h2>
                 </a>
               )}
             </>
           )}
         </div>
       )}
-
       <Snackbar
         open={openSuccess}
         anchorOrigin={{
@@ -260,7 +274,6 @@ function SearchResult() {
           Successfully loaded!
         </Alert>
       </Snackbar>
-
       <Snackbar
         anchorOrigin={{
           vertical: "bottom",

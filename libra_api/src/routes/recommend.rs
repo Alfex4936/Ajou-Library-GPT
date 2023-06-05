@@ -44,6 +44,14 @@ async fn recommend_book(info: Json<RecommendInfo>) -> impl Responder {
     let interest = (*info.interest).trim();
     let openai_client = async_openai::Client::new().with_api_key(&info.api);
     let queries = generate_query(interest, &openai_client).await;
+    if queries.is_empty() {
+        return HttpResponse::BadRequest().json(json!({
+            "queries": Vec::<String>::new(),
+            "books": Vec::<String>::new(),
+            "riss": Vec::<String>::new(),
+        }));
+    }
+
     let queries_clone = queries.clone();
 
     let mut book_embeddings = HashMap::new();
@@ -155,6 +163,14 @@ async fn recommend_riss(info: Json<RecommendInfo>) -> impl Responder {
     let interest = (*info.interest).trim();
     let openai_client = async_openai::Client::new().with_api_key(&info.api);
     let queries = generate_query(interest, &openai_client).await;
+    if queries.is_empty() {
+        return HttpResponse::BadRequest().json(json!({
+            "queries": Vec::<String>::new(),
+            "books": Vec::<String>::new(),
+            "riss": Vec::<String>::new(),
+        }));
+    }
+
     let queries_clone = queries.clone();
 
     let mut riss_embeddings = HashMap::new();
@@ -214,7 +230,15 @@ async fn recommend_all(info: Json<RecommendInfo>) -> impl Responder {
     let k = info.k;
     let interest = (*info.interest).trim();
     let openai_client = async_openai::Client::new().with_api_key(&info.api);
-    let queries = generate_query(interest, &openai_client).await;
+    let queries: Vec<String> = generate_query(interest, &openai_client).await;
+
+    if queries.is_empty() {
+        return HttpResponse::BadRequest().json(json!({
+            "queries": Vec::<String>::new(),
+            "books": Vec::<String>::new(),
+            "riss": Vec::<String>::new(),
+        }));
+    }
     let queries_clone = queries.clone();
 
     let mut book_embeddings = HashMap::new();
@@ -246,6 +270,7 @@ async fn recommend_all(info: Json<RecommendInfo>) -> impl Responder {
                             book["titleStatement"], book["author"], book["publication"]
                         ),
                     );
+                    // println!("{:#?}", book);
                 }
             }
             riss_with_embeddings = fetch_riss_tasks.select_next_some() => {

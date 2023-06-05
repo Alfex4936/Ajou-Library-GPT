@@ -53,7 +53,10 @@ pub async fn generate_query(interest: &str, openai_client: &async_openai::Client
         ])
         .build().unwrap();
 
-    let response = openai_client.chat().create(request).await.unwrap();
+    let response = match openai_client.chat().create(request).await {
+        Ok(response) => response,
+        Err(_) => return vec![],
+    };
     println!("Loaded...");
 
     let query_text = response.choices[0].message.content.clone();

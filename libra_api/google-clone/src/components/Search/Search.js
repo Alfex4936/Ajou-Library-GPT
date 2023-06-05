@@ -9,7 +9,7 @@ import { Button } from "@material-ui/core";
 
 import "./Search.css";
 
-function Search({ hideButtons = false }) {
+function Search({ hideButtons = false, loading = false }) {
   const [{ term, error }, dispatch] = useStateValue();
 
   const [input, setInput] = useState(term || "");
@@ -24,6 +24,10 @@ function Search({ hideButtons = false }) {
   const search = e => {
     e.preventDefault();
 
+    if (loading) {
+      return; // Don't perform search while loading
+    }
+
     console.log("You hit the search button >>", input);
 
     dispatch({
@@ -31,8 +35,14 @@ function Search({ hideButtons = false }) {
       term: input,
     });
 
-    if (!error) {
-      history.push("/search");
+    if (input.trim() !== "") {
+      // check if input isn't empty
+      if (!error) {
+        history.push("/search");
+      }
+    } else {
+      // Optional: Show an alert or some error message to user
+      alert("Search term cannot be empty.");
     }
   };
 
@@ -40,6 +50,7 @@ function Search({ hideButtons = false }) {
     <form className="search">
       <div className="search__input">
         <SearchIcon
+          disabled={loading} // Disable the search button while loading
           style={{ cursor: "pointer" }}
           onClick={search}
           className="search__inputIcon"
@@ -50,7 +61,12 @@ function Search({ hideButtons = false }) {
 
       {!hideButtons ? (
         <div className="search__buttons">
-          <Button type="submit" onClick={search} variant="outlined">
+          <Button
+            type="submit"
+            onClick={search}
+            variant="outlined"
+            disabled={loading} // Disable the search button while loading
+          >
             Libra 검색
           </Button>
           {/* <Button variant="outlined">I'm Feeling Lucky</Button> */}
@@ -62,10 +78,15 @@ function Search({ hideButtons = false }) {
             type="submit"
             onClick={search}
             variant="outlined"
+            disabled={loading} // Disable the search button while loading
           >
             Libra Search
           </Button>
-          <Button className="search__buttonHidden" variant="outlined">
+          <Button
+            className="search__buttonHidden"
+            variant="outlined"
+            disabled={loading} // Disable the search button while loading
+          >
             I'm Feeling Lucky
           </Button>
         </div>
