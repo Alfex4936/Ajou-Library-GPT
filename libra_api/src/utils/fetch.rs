@@ -16,7 +16,7 @@ use serde_json::Value;
 use cached::proc_macro::cached;
 use cached::SizedCache;
 
-const GPT: &str = "You are a sophisticated AI, built to formulate precise keywords for book search queries. Your job is to devise keywords deeply connected to the user's interest, with a focus on educational material. Construct each keyword alongside pertinent ones and directly related mathematical concepts when relevant. Each keyword should be followed by its English translation. For example, if a user is interested in 'Quantum Physics', your keywords might be '양자 물리, Quantum Physics, 양자역학, Quantum Mechanics'. Remember to always include the main keyword. Now, generate keywords for the user's query.";
+const GPT: &str = "You're Ajou Libra, an AI specialized in crafting precise keywords for book searches. Your mission is to produce keywords closely aligned with the user's educational interests, and also associated with related subjects or relevant mathematical concepts. Each keyword must be followed immediately by its English translation, structured as 'A in Korean, A in English'. The main keyword must always be included. The end result should be a seamless string of keywords derived from the user's input. For example, 'Quantum Physics' might lead to '양자 물리, Quantum Physics, 양자역학, Quantum Mechanics'. Your task now is to generate ONLY keywords, each matched with their English translation, all presented in a single continuous string.";
 // const RATE: &str = "As an AI, I'll evaluate how closely your study query matches a book's content, considering its depth, specificity, and direct relation. Provide your query and book title, and I'll score its relevance from 1 to 10 - with 1 being minimally relevant and 10 highly relevant. Your output MUST be a 'rating number' only, without any extra text.";
 
 lazy_static! {
@@ -32,26 +32,30 @@ lazy_static! {
     create = "{ SizedCache::with_size(100) }",
     convert = r#"{ interest.to_lowercase() }"#
 )]
-pub async fn generate_query(interest: &str, openai_client: &async_openai::Client) -> Vec<String> {
-    println!("Starting...");
+pub async fn generate_query(
+    interest: &str,
+    model: &str,
+    openai_client: &async_openai::Client,
+) -> Vec<String> {
+    println!("Starting... {model}");
     let request = CreateChatCompletionRequestArgs::default()
-    .max_tokens(150_u16)
-    .model("gpt-4")
-    .messages([
-        ChatCompletionRequestMessageArgs::default()
-        .role(Role::System)
-        // .content("You are an AI trained to generate search queries for book titles based on user prompts. Your goal is to return a list of unique keywords that are highly relevant to the user's interest but cover a wide range of material within the topic, specifically focusing on higher education level material. Make sure each keyword is relevant to the topic of interest by combining the topic keyword with other relevant keywords, including relevant mathematical concepts when appropriate. For example, if the user inputs 'Want to learn psychology from scratch', return a comma-separated string of keywords like 'Psychology, Psychology Basics, Psychology Core Concepts, Understanding Psychology, Introduction to Psychology'. For a topic like 'Artificial Intelligence Basics', include keywords such as 'Linear Algebra, Probability, Statistics, Calculus'. Must contain at least the core keyword, in there it was Psychology (심리학)")
-        .content(GPT)
-        .build().unwrap(),
-        ChatCompletionRequestMessageArgs::default()
-        .role(Role::User)
-        .content(&format!(
-                    "Generate a bilingual search query (Korean and English) for the following interest: {}",
-                    interest
-                ))
-                .build().unwrap(),
+        .max_tokens(150_u16)
+        .model(model)
+        .messages([
+            ChatCompletionRequestMessageArgs::default()
+                .role(Role::System)
+                // .content("You are an AI trained to generate search queries for book titles based on user prompts. Your goal is to return a list of unique keywords that are highly relevant to the user's interest but cover a wide range of material within the topic, specifically focusing on higher education level material. Make sure each keyword is relevant to the topic of interest by combining the topic keyword with other relevant keywords, including relevant mathematical concepts when appropriate. For example, if the user inputs 'Want to learn psychology from scratch', return a comma-separated string of keywords like 'Psychology, Psychology Basics, Psychology Core Concepts, Understanding Psychology, Introduction to Psychology'. For a topic like 'Artificial Intelligence Basics', include keywords such as 'Linear Algebra, Probability, Statistics, Calculus'. Must contain at least the core keyword, in there it was Psychology (심리학)")
+                .content(GPT)
+                .build()
+                .unwrap(),
+            ChatCompletionRequestMessageArgs::default()
+                .role(Role::User)
+                .content(interest)
+                .build()
+                .unwrap(),
         ])
-        .build().unwrap();
+        .build()
+        .unwrap();
 
     let response = match openai_client.chat().create(request).await {
         Ok(response) => response,
@@ -59,11 +63,17 @@ pub async fn generate_query(interest: &str, openai_client: &async_openai::Client
     };
     println!("Loaded...");
 
-    let query_text = response.choices[0].message.content.clone();
-    let queries: Vec<String> = query_text
+    let query_text: String = response.choices[0].message.content.clone();
+
+    let mut queries: Vec<String> = query_text
         .split(", ")
-        .map(|s| s.trim().to_string())
+        .map(|s: &str| s.trim().to_string())
         .collect();
+
+    if let Some(last) = queries.last_mut() {
+        *last = last.trim_end_matches('.').to_string();
+    }
+
     queries
 }
 

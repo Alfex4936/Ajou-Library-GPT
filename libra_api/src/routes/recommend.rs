@@ -17,6 +17,7 @@ struct RecommendInfo {
     api: String,
     interest: String,
     k: u8,
+    model: String,
 }
 
 #[derive(Serialize)]
@@ -42,8 +43,9 @@ struct RecommendedRISS {
 async fn recommend_book(info: Json<RecommendInfo>) -> impl Responder {
     let k = info.k;
     let interest = (*info.interest).trim();
+    let model = (*info.model).trim();
     let openai_client = async_openai::Client::new().with_api_key(&info.api);
-    let queries = generate_query(interest, &openai_client).await;
+    let queries = generate_query(interest, model, &openai_client).await;
     if queries.is_empty() {
         return HttpResponse::BadRequest().json(json!({
             "queries": Vec::<String>::new(),
@@ -161,8 +163,9 @@ async fn recommend_book(info: Json<RecommendInfo>) -> impl Responder {
 async fn recommend_riss(info: Json<RecommendInfo>) -> impl Responder {
     let k = info.k;
     let interest = (*info.interest).trim();
+    let model = (*info.model).trim();
     let openai_client = async_openai::Client::new().with_api_key(&info.api);
-    let queries = generate_query(interest, &openai_client).await;
+    let queries = generate_query(interest, model, &openai_client).await;
     if queries.is_empty() {
         return HttpResponse::BadRequest().json(json!({
             "queries": Vec::<String>::new(),
@@ -229,8 +232,10 @@ async fn recommend_riss(info: Json<RecommendInfo>) -> impl Responder {
 async fn recommend_all(info: Json<RecommendInfo>) -> impl Responder {
     let k = info.k;
     let interest = (*info.interest).trim();
+
+    let model = (*info.model).trim();
     let openai_client = async_openai::Client::new().with_api_key(&info.api);
-    let queries: Vec<String> = generate_query(interest, &openai_client).await;
+    let queries: Vec<String> = generate_query(interest, model, &openai_client).await;
 
     if queries.is_empty() {
         return HttpResponse::BadRequest().json(json!({

@@ -1,9 +1,10 @@
 export const initialState = {
   term: null,
-  numResults: 5, // set a default value
+  numResults: 5,
   openAIKey: "sk-",
   error: null,
   history: [],
+  model: "gpt-4",
 };
 
 export const actionTypes = {
@@ -13,6 +14,7 @@ export const actionTypes = {
   SET_ERROR: "SET_ERROR",
   CLEAR_ERROR: "CLEAR_ERROR",
   ADD_HISTORY: "ADD_HISTORY",
+  SET_GPT_MODEL: "SET_GPT_MODEL",
 };
 
 const reducer = (state, action) => {
@@ -58,6 +60,11 @@ const reducer = (state, action) => {
       return {
         ...state,
         history: action.history,
+      };
+    case actionTypes.SET_GPT_MODEL:
+      return {
+        ...state,
+        model: action.model,
       };
 
     default:

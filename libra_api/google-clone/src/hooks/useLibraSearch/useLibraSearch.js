@@ -3,7 +3,7 @@ import { useStateValue } from "../../StateContext";
 import { actionTypes } from "../../reducer";
 
 const useLibraSearch = term => {
-  const [{ numResults, openAIKey, history }, dispatch] = useStateValue();
+  const [{ numResults, openAIKey, model }, dispatch] = useStateValue();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -32,6 +32,7 @@ const useLibraSearch = term => {
             k: numResults,
             api: openAIKey,
             interest: `${term}`,
+            model: model,
           }),
         });
 

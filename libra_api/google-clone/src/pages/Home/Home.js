@@ -18,13 +18,19 @@ import TextField from "@material-ui/core/TextField";
 import DialogActions from "@material-ui/core/DialogActions";
 import Button from "@material-ui/core/Button";
 
+import InputLabel from "@material-ui/core/InputLabel";
+import Input from "@material-ui/core/Input";
+import MenuItem from "@material-ui/core/MenuItem";
+import FormControl from "@material-ui/core/FormControl";
+import Select from "@material-ui/core/Select";
+
 import "./Home.css";
 
 function Home() {
-  const [{ numResults, openAIKey, history }, dispatch] = useStateValue();
+  const [{ numResults, openAIKey, history, model }, dispatch] = useStateValue();
   const [key, setKey] = useState(openAIKey || ""); // will be initialized with the current value of the key in the context
+  const [gptModel, setGptModel] = useState(model || "gpt-4");
   const [open, setOpen] = useState(false);
-  const [hist, setHist] = useState(openAIKey || ""); // will be initialized with the current value of the key in the context
   const [openHistory, setOpenHistory] = useState(false);
 
   const handleClickOpenHistory = () => {
@@ -57,8 +63,13 @@ function Home() {
       type: actionTypes.SET_OPENAI_KEY,
       openAIKey: key,
     });
+    dispatch({
+      type: actionTypes.SET_GPT_MODEL,
+      model: gptModel,
+    });
     // Save the OpenAI key to local storage
     localStorage.setItem("openAIKey", key);
+    localStorage.setItem("gptModel", gptModel);
     setOpen(false);
   };
 
@@ -69,12 +80,29 @@ function Home() {
     });
   };
 
+  const handleModelChange = event => {
+    setGptModel(event.target.value);
+  };
+
   useEffect(() => {
     // Get the history from localStorage and parse it back into an array
     const savedHistory =
       JSON.parse(localStorage.getItem("searchHistory")) || [];
     // Update the state with the loaded history
     dispatch({ type: actionTypes.SET_HISTORY, history: savedHistory });
+  }, [dispatch]);
+
+  useEffect(() => {
+    // Get the model from localStorage
+    const GPT = localStorage.getItem("gptModel");
+    // Update the state with the loaded history
+    if (GPT) {
+      setGptModel(GPT);
+      dispatch({
+        type: actionTypes.SET_GPT_MODEL,
+        model: GPT,
+      });
+    }
   }, [dispatch]);
 
   useEffect(() => {
@@ -122,7 +150,7 @@ function Home() {
         <DialogTitle id="form-dialog-title">Settings</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Please enter your OpenAI key (GPT-4):
+            Please enter your OpenAI key (GPT-4 preferable):
           </DialogContentText>
           <TextField
             autoFocus
@@ -134,6 +162,12 @@ function Home() {
             onChange={handleKeyChange}
             fullWidth
           />
+
+          <DialogContentText>Please choose GPT model: </DialogContentText>
+          <Select native value={gptModel} onChange={handleModelChange}>
+            <option value={"gpt-4"}>gpt-4</option>
+            <option value={"gpt-3.5-turbo"}>gpt-3.5-turbo</option>
+          </Select>
 
           <DialogContentText>Please select K: </DialogContentText>
           <Slider
