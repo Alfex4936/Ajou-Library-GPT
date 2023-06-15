@@ -300,9 +300,15 @@ async fn recommend_all(info: Json<RecommendInfo>) -> impl Responder {
         }
     }
 
-    let student_embedding = fetch_embedding(interest.to_string(), &openai_client)
-        .await
-        .unwrap();
+    let student_embedding = match fetch_embedding(interest.to_string(), &openai_client).await {
+        Ok(embedding) => embedding,
+        Err(e) => {
+            return HttpResponse::InternalServerError().json(json!({
+                "error": format!("Failed to fetch student embedding: {}", e),
+            }))
+        }
+    };
+
     let recommended_books = recommend_books(
         student_embedding.clone(),
         book_embeddings,
@@ -310,6 +316,7 @@ async fn recommend_all(info: Json<RecommendInfo>) -> impl Responder {
         k.into(),
         0.8,
     );
+
     let recommended_riss = recommend_books(
         student_embedding,
         riss_embeddings,
@@ -325,28 +332,32 @@ async fn recommend_all(info: Json<RecommendInfo>) -> impl Responder {
 
     let recommended_books: Vec<RecommendedBook> = futures::stream::iter(recommended_books)
         .then(|(book_id, details)| async move {
-            // Extract the book_id_num for use in get_rent_status_and_locations
             let book_id_num = book_id.split('_').last().unwrap();
+            let rent_status = get_rent_status_and_locations(book_id_num)
+                .await
+                .map_err(|e| format!("Failed to get rent status: {}", e))?;
 
-            // Use get_rent_status_and_locations to get rent_status
-            let rent_status = get_rent_status_and_locations(book_id_num).await.unwrap();
-
-            // Calculate rentable_locations
             let rentable_locations: Vec<&str> = rent_status
                 .iter()
                 .filter_map(|(k, v)| if *v { Some(k.as_str()) } else { None })
                 .collect();
 
-            // Create the rent_status and rent_place variables
             let rentable = !rentable_locations.is_empty();
             let rent_place = rentable_locations.join(", ");
-
-            // Return the constructed RecommendedBook
-            RecommendedBook {
+            Ok::<_, String>(RecommendedBook {
                 book_id,
                 details,
                 rent_place,
                 rentable,
+            })
+        })
+        .filter_map(|res| async move {
+            match res {
+                Ok(book) => Some(book),
+                Err(e) => {
+                    eprintln!("Error: {}", e); // Log the error
+                    None
+                }
             }
         })
         .collect::<Vec<RecommendedBook>>()

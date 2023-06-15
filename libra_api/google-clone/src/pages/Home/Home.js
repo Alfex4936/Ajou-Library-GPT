@@ -3,12 +3,13 @@ import { Link } from "react-router-dom";
 
 import Search from "../../components/Search/Search";
 import History from "../../components/History/History";
+import { actionTypes } from "../../reducer";
+import { useStateValue } from "../../StateContext";
 
 import SettingsIcon from "@material-ui/icons/Settings";
 import HistoryIcon from "@material-ui/icons/History";
-import { Slider } from "@material-ui/core";
-import { actionTypes } from "../../reducer";
-import { useStateValue } from "../../StateContext";
+import IconButton from "@material-ui/core/IconButton";
+import ClearAllIcon from "@material-ui/icons/ClearAll";
 
 import Dialog from "@material-ui/core/Dialog";
 import DialogTitle from "@material-ui/core/DialogTitle";
@@ -17,12 +18,8 @@ import DialogContentText from "@material-ui/core/DialogContentText";
 import TextField from "@material-ui/core/TextField";
 import DialogActions from "@material-ui/core/DialogActions";
 import Button from "@material-ui/core/Button";
-
-import InputLabel from "@material-ui/core/InputLabel";
-import Input from "@material-ui/core/Input";
-import MenuItem from "@material-ui/core/MenuItem";
-import FormControl from "@material-ui/core/FormControl";
 import Select from "@material-ui/core/Select";
+import { Slider } from "@material-ui/core";
 
 import "./Home.css";
 
@@ -71,6 +68,17 @@ function Home() {
     localStorage.setItem("openAIKey", key);
     localStorage.setItem("gptModel", gptModel);
     setOpen(false);
+  };
+
+  const handleClearHistory = () => {
+    // Clear the search history from the state
+    dispatch({ type: actionTypes.CLEAR_HISTORY });
+
+    // Remove the search history from local storage
+    localStorage.removeItem("searchHistory");
+
+    // Close the history dialog
+    handleCloseHistory();
   };
 
   const onNumResultsChange = (event, value) => {
@@ -200,7 +208,12 @@ function Home() {
         onClose={handleCloseHistory}
         aria-labelledby="form-dialog-title"
       >
-        <DialogTitle id="form-dialog-title">Search History</DialogTitle>
+        <DialogTitle id="form-dialog-title">
+          Search History
+          <IconButton style={{ float: "right" }} onClick={handleClearHistory}>
+            <ClearAllIcon />
+          </IconButton>
+        </DialogTitle>
         <DialogContent style={{ maxHeight: "60vh", maxWidth: "80vw" }}>
           <History searchHistory={history} />
         </DialogContent>

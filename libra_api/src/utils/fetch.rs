@@ -16,6 +16,9 @@ use serde_json::Value;
 use cached::proc_macro::cached;
 use cached::SizedCache;
 
+const PRE_USER: &str = "What should I study about computer science";
+const PRE_ASSISTANT: &str =
+    "알고리즘, Algorithm, 자료구조, Data Structure, 운영체제, Operating System, 네트워크, Network";
 const GPT: &str = "You're Ajou Libra, an AI specialized in crafting precise keywords for book searches. Your mission is to produce keywords closely aligned with the user's educational interests, and also associated with related subjects or relevant mathematical concepts. Each keyword must be followed immediately by its English translation, structured as 'A in Korean, A in English'. The main keyword must always be included. The end result should be a seamless string of keywords derived from the user's input. For example, 'Quantum Physics' might lead to '양자 물리, Quantum Physics, 양자역학, Quantum Mechanics'. Your task now is to generate ONLY keywords, each matched with their English translation, all presented in a single continuous string.";
 // const RATE: &str = "As an AI, I'll evaluate how closely your study query matches a book's content, considering its depth, specificity, and direct relation. Provide your query and book title, and I'll score its relevance from 1 to 10 - with 1 being minimally relevant and 10 highly relevant. Your output MUST be a 'rating number' only, without any extra text.";
 
@@ -30,7 +33,7 @@ lazy_static! {
 #[cached(
     type = "SizedCache<String, Vec<String>>",
     create = "{ SizedCache::with_size(100) }",
-    convert = r#"{ interest.to_lowercase() }"#
+    convert = r#"{ format!("{}_{}", model.to_lowercase(), interest.to_lowercase()) }"#
 )]
 pub async fn generate_query(
     interest: &str,
@@ -46,6 +49,16 @@ pub async fn generate_query(
                 .role(Role::System)
                 // .content("You are an AI trained to generate search queries for book titles based on user prompts. Your goal is to return a list of unique keywords that are highly relevant to the user's interest but cover a wide range of material within the topic, specifically focusing on higher education level material. Make sure each keyword is relevant to the topic of interest by combining the topic keyword with other relevant keywords, including relevant mathematical concepts when appropriate. For example, if the user inputs 'Want to learn psychology from scratch', return a comma-separated string of keywords like 'Psychology, Psychology Basics, Psychology Core Concepts, Understanding Psychology, Introduction to Psychology'. For a topic like 'Artificial Intelligence Basics', include keywords such as 'Linear Algebra, Probability, Statistics, Calculus'. Must contain at least the core keyword, in there it was Psychology (심리학)")
                 .content(GPT)
+                .build()
+                .unwrap(),
+            ChatCompletionRequestMessageArgs::default()
+                .role(Role::User)
+                .content(PRE_USER)
+                .build()
+                .unwrap(),
+            ChatCompletionRequestMessageArgs::default()
+                .role(Role::Assistant)
+                .content(PRE_ASSISTANT)
                 .build()
                 .unwrap(),
             ChatCompletionRequestMessageArgs::default()
@@ -73,6 +86,8 @@ pub async fn generate_query(
     if let Some(last) = queries.last_mut() {
         *last = last.trim_end_matches('.').to_string();
     }
+
+    // println!("Queries: {:#?}", queries);
 
     queries
 }
@@ -212,12 +227,24 @@ pub async fn get_rent_status_and_locations(
         "https://library.ajou.ac.kr/pyxis-api/1/biblios/{}/items",
         book_id
     );
-    let response = HTTP_CLIENT.get(&url).send().await?.json::<Value>().await?;
+    // println!("{}", url);
+    let response = match HTTP_CLIENT.get(&url).send().await {
+        Ok(resp) => match resp.json::<Value>().await {
+            Ok(json) => json,
+            Err(_) => return Err(anyhow::Error::msg("Failed to parse JSON response")),
+        },
+        Err(_) => return Err(anyhow::Error::msg("HTTP request failed")),
+    };
+
     let items = &response["data"];
     let mut rent_status = HashMap::new();
     for (_key, item_list) in items.as_object().unwrap() {
         for item in item_list.as_array().unwrap() {
-            let location_name = item["location"]["name"].as_str().unwrap().to_string();
+            let location_name = match item["location"]["name"].as_str() {
+                Some(name) => name.to_string(),
+                None => return Err(anyhow::Error::msg("Failed to get location name")),
+            };
+
             let circulation_state = item.get("circulationState");
             let is_charged = match circulation_state {
                 Some(cs) => cs.get("isCharged").and_then(Value::as_bool),

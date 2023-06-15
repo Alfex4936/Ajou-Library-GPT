@@ -15,6 +15,7 @@ export const actionTypes = {
   CLEAR_ERROR: "CLEAR_ERROR",
   ADD_HISTORY: "ADD_HISTORY",
   SET_GPT_MODEL: "SET_GPT_MODEL",
+  CLEAR_HISTORY: "CLEAR_HISTORY",
 };
 
 const reducer = (state, action) => {
@@ -45,6 +46,11 @@ const reducer = (state, action) => {
       return {
         ...state,
         error: null, // reset error to null
+      };
+    case actionTypes.CLEAR_HISTORY:
+      return {
+        ...state,
+        history: [],
       };
     case actionTypes.ADD_HISTORY:
       // Add new history to the existing history array

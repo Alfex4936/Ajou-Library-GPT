@@ -12,7 +12,6 @@ import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
 
 import useLibraSearch from "../../hooks/useLibraSearch/useLibraSearch";
 import { useStateValue } from "../../StateContext";
-import { actionTypes } from "../../reducer";
 
 import Search from "../../components/Search/Search";
 import SearchOption from "../../components/SearchOption/SearchOption";

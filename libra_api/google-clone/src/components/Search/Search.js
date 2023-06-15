@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react"; // import useEffect
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useStateValue } from "../../StateContext";
 import { actionTypes } from "../../reducer";
 
@@ -14,7 +14,7 @@ function Search({ hideButtons = false, loading = false }) {
 
   const [input, setInput] = useState(term || "");
 
-  const history = useHistory();
+  const navigate = useNavigate();
 
   // update the input state when term changes
   useEffect(() => {
@@ -38,7 +38,7 @@ function Search({ hideButtons = false, loading = false }) {
     if (input.trim() !== "") {
       // check if input isn't empty
       if (!error) {
-        history.push("/search");
+        navigate("/search");
       }
     } else {
       // Optional: Show an alert or some error message to user
