@@ -64,7 +64,7 @@
         "width": 800,
         "minHeight": 400,
         "minWidth": 400,
-        "transparent": true
+        "transparent": false
       }
     ]
   }
