@@ -7,6 +7,7 @@
     "@material-ui/core": "^4.12.4",
     "@material-ui/icons": "^4.11.3",
     "@material-ui/lab": "latest",
+    "@tauri-apps/api": "^1.4.0",
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.4.3",
@@ -17,7 +18,7 @@
     "web-vitals": "^3.3.2"
   },
   "scripts": {
-    "start": "set NODE_OPTIONS=--openssl-legacy-provider & craco start",
+    "start": "set NODE_OPTIONS=--openssl-legacy-provider & set PORT=3003 & craco start",
     "build": "set NODE_OPTIONS=--openssl-legacy-provider & craco build",
     "test": "set NODE_OPTIONS=--openssl-legacy-provider & craco test",
     "eject": "set NODE_OPTIONS=--openssl-legacy-provider & craco eject"
@@ -39,5 +40,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^1.4.0"
   }
 }

@@ -21,6 +21,8 @@ import Button from "@material-ui/core/Button";
 import Select from "@material-ui/core/Select";
 import { Slider } from "@material-ui/core";
 
+import { listen } from "@tauri-apps/api/event";
+
 import "./Home.css";
 
 function Home() {
@@ -29,6 +31,9 @@ function Home() {
   const [gptModel, setGptModel] = useState(model || "gpt-4");
   const [open, setOpen] = useState(false);
   const [openHistory, setOpenHistory] = useState(false);
+
+  const [menuPayload, setMenuPayload] = useState("");
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const handleClickOpenHistory = () => {
     setOpenHistory(true);
@@ -91,6 +96,28 @@ function Home() {
   const handleModelChange = event => {
     setGptModel(event.target.value);
   };
+
+  // Tauri
+  useEffect(() => {
+    listen("menu-event", e => {
+      setMenuPayload(e.payload);
+      setMenuOpen(true);
+    });
+  }, []);
+
+  // Tauri
+  useEffect(() => {
+    if (menuOpen) {
+      switch (menuPayload) {
+        case "clear-event":
+          handleClearHistory();
+          break;
+        default:
+          break;
+      }
+      setMenuOpen(false);
+    }
+  }, [menuOpen]);
 
   useEffect(() => {
     // Get the history from localStorage and parse it back into an array
