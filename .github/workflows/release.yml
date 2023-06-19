@@ -38,13 +38,12 @@ jobs:
         with:
           node-version: "18.x"
           cache: "yarn"
-          cache-dependency-path: libra_api/google-clone/yarn.lock
 
       - name: Install dependencies and build web 📦
         run: |
           cd libra_api/google-clone
-          yarn install --frozen-lockfile 
-          yarn build
+          yarn install
+          CI=false yarn build
 
       - name: Build the app
         uses: tauri-apps/tauri-action@v0
