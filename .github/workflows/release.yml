@@ -38,6 +38,7 @@ jobs:
         with:
           node-version: "18.x"
           cache: "yarn"
+          cache-dependency-path: libra_api/google-clone/yarn.lock
 
       - name: Install dependencies and build web 📦
         run: |
