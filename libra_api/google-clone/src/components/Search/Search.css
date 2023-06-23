@@ -3,7 +3,7 @@
   align-items: center;
   border: 1px solid lightgray;
   height: 30px;
-  padding: 10px 20px;
+  padding: 10px 8px 10px 14px;
   border-radius: 50px;
   width: 75vw;
   max-width: 560px;
@@ -13,9 +13,26 @@
 
 .search__input > input {
   flex: 1;
-  padding: 10px 20px;
+  padding: 10px 10px;
   font-size: medium;
   border: none;
+}
+
+.search__input > .search__inputIcon,
+.search__input > .MicIcon {
+  flex-shrink: 0;
+}
+
+@media (max-width: 330px) {
+  .search__input > input {
+    flex: 1;
+    padding: 5px 5px; /* Adjust padding for small screens */
+  }
+
+  .search__input > .search__inputIcon,
+  .search__input > .MicIcon {
+    padding: 0 2px; /* Adjust padding for small screens */
+  }
 }
 
 .search__input > input:focus {

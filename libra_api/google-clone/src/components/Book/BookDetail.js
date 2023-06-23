@@ -2,7 +2,7 @@
 import React from "react";
 import "./BookDetail.css";
 
-function BookDetail({ bookId, details, rentPlace, rentable }) {
+export default function BookDetail({ bookId, details, rentPlace, rentable }) {
   const parsedDetails = details.split('" by ');
   const titleAuthor = parsedDetails[0].replaceAll('"', "").trim();
   const title = titleAuthor.split(" : ")[0];
@@ -28,5 +28,3 @@ function BookDetail({ bookId, details, rentPlace, rentable }) {
     </div>
   );
 }
-
-export default BookDetail;

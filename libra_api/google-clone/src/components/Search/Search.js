@@ -1,3 +1,4 @@
+// Search.js
 import React, { useState, useEffect } from "react"; // import useEffect
 import { useNavigate } from "react-router-dom";
 import { useStateValue } from "../../StateContext";
@@ -5,12 +6,16 @@ import { actionTypes } from "../../reducer";
 
 import SearchIcon from "@material-ui/icons/Search";
 import MicIcon from "@material-ui/icons/Mic";
+import GraphicEqIcon from "@material-ui/icons/GraphicEq";
 import { Button } from "@material-ui/core";
+
+import { useVoice } from "../../hooks/useVoice";
 
 import "./Search.css";
 
 function Search({ hideButtons = false, loading = false }) {
   const [{ term, error }, dispatch] = useStateValue();
+  const { text, listen, voiceSupported, isListening } = useVoice();
 
   const [input, setInput] = useState(term || "");
 
@@ -20,6 +25,13 @@ function Search({ hideButtons = false, loading = false }) {
   useEffect(() => {
     setInput(term);
   }, [term]);
+
+  // update the input state when voice input comes
+  useEffect(() => {
+    if (text !== "") {
+      setInput(text);
+    }
+  }, [text]);
 
   const search = e => {
     e.preventDefault();
@@ -56,7 +68,14 @@ function Search({ hideButtons = false, loading = false }) {
           className="search__inputIcon"
         />
         <input value={input} onChange={e => setInput(e.target.value)} />
-        <MicIcon />
+        <MicIcon
+          onClick={voiceSupported ? listen : undefined}
+          style={{
+            display: isListening ? "none" : "inline",
+            cursor: "pointer",
+          }}
+        />
+        <GraphicEqIcon style={{ display: isListening ? "inline" : "none" }} />
       </div>
 
       {!hideButtons ? (

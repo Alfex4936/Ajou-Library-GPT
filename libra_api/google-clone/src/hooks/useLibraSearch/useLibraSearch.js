@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useStateValue } from "../../StateContext";
 import { actionTypes } from "../../reducer";
 
-const useLibraSearch = term => {
+export const useLibraSearch = term => {
   const [{ numResults, openAIKey, model }, dispatch] = useStateValue();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);

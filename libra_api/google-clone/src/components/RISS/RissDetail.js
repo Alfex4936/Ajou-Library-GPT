@@ -2,7 +2,7 @@
 import React from "react";
 import "./RissDetail.css";
 
-function RissDetail({ id, details }) {
+export default function RissDetail({ id, details }) {
   const parsedDetails = details?.split('" by ');
   const title = parsedDetails[0].replaceAll('"', "").trim();
   const author = parsedDetails[1]
@@ -23,5 +23,3 @@ function RissDetail({ id, details }) {
     </div>
   );
 }
-
-export default RissDetail;

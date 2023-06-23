@@ -32,8 +32,8 @@ function Alert(props) {
   return <MuiAlert elevation={6} variant="filled" {...props} />;
 }
 
-function SearchResult() {
-  const [{ term, error }, dispatch] = useStateValue();
+export default function SearchResult() {
+  const [{ term, error }] = useStateValue();
   const { data, loading } = useLibraSearch(term); // LIVE API Call
 
   // Add a new piece of state for the selected tab
@@ -298,5 +298,3 @@ function SearchResult() {
     </div>
   );
 }
-
-export default SearchResult;

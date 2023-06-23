@@ -3,7 +3,13 @@ import React from "react";
 
 import "./SearchOption.css";
 
-function SearchOption({ title, icon, setSelectedTab, activeTab, loading }) {
+export default function SearchOption({
+  title,
+  icon,
+  setSelectedTab,
+  activeTab,
+  loading,
+}) {
   console.log(title, activeTab);
   return (
     <div
@@ -21,4 +27,3 @@ function SearchOption({ title, icon, setSelectedTab, activeTab, loading }) {
     </div>
   );
 }
-export default SearchOption;
