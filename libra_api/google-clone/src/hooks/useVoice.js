@@ -1,9 +1,14 @@
-// useVoice.js
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react"; // import useRef
 
 const useVoice = () => {
   const [text, setText] = useState("");
   const [isListening, setIsListening] = useState(false);
+  const isListeningRef = useRef(isListening); // new useRef
+
+  // Update isListeningRef current value whenever isListening changes
+  useEffect(() => {
+    isListeningRef.current = isListening;
+  }, [isListening]);
 
   let speech;
   if (window.webkitSpeechRecognition) {
@@ -18,7 +23,6 @@ const useVoice = () => {
     if (isListening) {
       try {
         speech?.stop();
-        setIsListening(false);
       } catch (err) {
         console.error("Error stopping speech recognition:", err);
       }
@@ -37,12 +41,13 @@ const useVoice = () => {
       return;
     }
     speech.onresult = event => {
-      if (isListening) {
+      if (isListeningRef.current) {
+        // use isListeningRef here instead
         setText(event.results[event.results.length - 1][0].transcript);
         setIsListening(false);
       }
     };
-  }, [isListening, speech]);
+  }, [speech]); // Remove isListening from dependency array
 
   return {
     text,

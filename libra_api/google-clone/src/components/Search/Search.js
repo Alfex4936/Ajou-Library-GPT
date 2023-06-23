@@ -75,7 +75,10 @@ function Search({ hideButtons = false, loading = false }) {
             cursor: "pointer",
           }}
         />
-        <GraphicEqIcon style={{ display: isListening ? "inline" : "none" }} />
+        <GraphicEqIcon
+          onClick={voiceSupported ? listen : undefined}
+          style={{ display: isListening ? "inline" : "none" }}
+        />
       </div>
 
       {!hideButtons ? (
