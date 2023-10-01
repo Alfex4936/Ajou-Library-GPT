@@ -26,7 +26,7 @@ RUN apt-get update && \
 COPY --from=builder /app/target/release/libra_api /app/libra_api
 
 # Set environment variables
-ENV RUST_LOG=info
+# ENV RUST_LOG=info
 EXPOSE 8800
 
 # Start the application

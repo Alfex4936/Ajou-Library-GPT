@@ -1,6 +1,7 @@
 use std::{collections::HashMap, time::Duration};
 
 use async_openai::{
+    config::OpenAIConfig,
     types::{
         ChatCompletionRequestMessageArgs, CreateChatCompletionRequestArgs,
         CreateEmbeddingRequestArgs, Role,
@@ -38,9 +39,12 @@ lazy_static! {
 pub async fn generate_query(
     interest: &str,
     model: &str,
-    openai_client: &async_openai::Client,
+    openai_client: &Client<OpenAIConfig>,
 ) -> Vec<String> {
     println!("Starting... {model}");
+    // let config = OpenAIConfig::new().with_api_key(openai_key);
+    // let openai_client = async_openai::Client::with_config(config);
+
     let request = CreateChatCompletionRequestArgs::default()
         .max_tokens(150_u16)
         .model(model)
@@ -76,7 +80,11 @@ pub async fn generate_query(
     };
     println!("Loaded...");
 
-    let query_text: String = response.choices[0].message.content.clone();
+    let query_text: String = response.choices[0]
+        .message
+        .content
+        .clone()
+        .unwrap_or_default();
 
     let mut queries: Vec<String> = query_text
         .split(", ")
@@ -94,7 +102,7 @@ pub async fn generate_query(
 
 pub async fn fetch_books_with_embeddings(
     keyword: &str,
-    openai_client: &Client,
+    openai_client: &Client<OpenAIConfig>,
 ) -> Result<Vec<(Value, Vec<f32>)>, anyhow::Error> {
     let books: Vec<Value> = fetch_books(keyword).await?;
     let book_embedding_futures = futures::stream::FuturesUnordered::new();
@@ -120,7 +128,7 @@ pub async fn fetch_books_with_embeddings(
 
 pub async fn fetch_riss_with_embeddings(
     keyword: &str,
-    openai_client: &Client,
+    openai_client: &Client<OpenAIConfig>,
 ) -> Result<Vec<(Value, Vec<f32>)>, anyhow::Error> {
     let riss: Vec<Value> = fetch_riss(keyword).await?;
     let riss_embedding_futures = futures::stream::FuturesUnordered::new();
@@ -144,7 +152,7 @@ pub async fn fetch_riss_with_embeddings(
 
 pub async fn fetch_embedding(
     text: String,
-    openai_client: &Client,
+    openai_client: &Client<OpenAIConfig>,
 ) -> Result<Vec<f32>, anyhow::Error> {
     let request = CreateEmbeddingRequestArgs::default()
         .model("text-embedding-ada-002")

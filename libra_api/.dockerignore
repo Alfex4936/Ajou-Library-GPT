@@ -1,5 +1,8 @@
 libra_api/node_modules
 
+google-clone/src-tauri/
+google-clone/node_modules/
+
 .vscode
 .env
 __pycache__
@@ -14,6 +17,7 @@ Cargo.lock
 */.pnp
 .pnp.js
 .env
+node_modules/
 
 # testing
 */coverage

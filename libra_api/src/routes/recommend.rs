@@ -5,12 +5,15 @@ use actix_web::{
     web::{self, Json},
     HttpResponse, Responder,
 };
+
 use futures::select;
 use futures::stream::FuturesUnordered;
 use futures::stream::StreamExt;
 use serde_json::json;
 
 use crate::utils::fetch::*;
+
+use async_openai::config::OpenAIConfig;
 
 #[derive(Deserialize)]
 struct RecommendInfo {
@@ -44,7 +47,10 @@ async fn recommend_book(info: Json<RecommendInfo>) -> impl Responder {
     let k = info.k;
     let interest = (*info.interest).trim();
     let model = (*info.model).trim();
-    let openai_client = async_openai::Client::new().with_api_key(&info.api);
+
+    let config = OpenAIConfig::new().with_api_key(&info.api);
+    let openai_client = async_openai::Client::with_config(config);
+
     let queries = generate_query(interest, model, &openai_client).await;
     if queries.is_empty() {
         return HttpResponse::BadRequest().json(json!({
@@ -164,7 +170,10 @@ async fn recommend_riss(info: Json<RecommendInfo>) -> impl Responder {
     let k = info.k;
     let interest = (*info.interest).trim();
     let model = (*info.model).trim();
-    let openai_client = async_openai::Client::new().with_api_key(&info.api);
+
+    let config = OpenAIConfig::new().with_api_key(&info.api);
+    let openai_client = async_openai::Client::with_config(config);
+
     let queries = generate_query(interest, model, &openai_client).await;
     if queries.is_empty() {
         return HttpResponse::BadRequest().json(json!({
@@ -234,7 +243,9 @@ async fn recommend_all(info: Json<RecommendInfo>) -> impl Responder {
     let interest = (*info.interest).trim();
 
     let model = (*info.model).trim();
-    let openai_client = async_openai::Client::new().with_api_key(&info.api);
+    let config = OpenAIConfig::new().with_api_key(&info.api);
+    let openai_client = async_openai::Client::with_config(config);
+
     let queries: Vec<String> = generate_query(interest, model, &openai_client).await;
 
     if queries.is_empty() {
