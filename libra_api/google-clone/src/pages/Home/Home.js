@@ -1,39 +1,51 @@
-import React, { useState, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 
-import Search from "../../components/Search/Search";
 import History from "../../components/History/History";
+import Search from "../../components/Search/Search";
 import { actionTypes } from "../../reducer";
 import { useStateValue } from "../../StateContext";
 
-import SettingsIcon from "@material-ui/icons/Settings";
-import HistoryIcon from "@material-ui/icons/History";
 import IconButton from "@material-ui/core/IconButton";
 import ClearAllIcon from "@material-ui/icons/ClearAll";
+import HistoryIcon from "@material-ui/icons/History";
+import SettingsIcon from "@material-ui/icons/Settings";
 
+import { Slider } from "@material-ui/core";
+import Button from "@material-ui/core/Button";
 import Dialog from "@material-ui/core/Dialog";
-import DialogTitle from "@material-ui/core/DialogTitle";
+import DialogActions from "@material-ui/core/DialogActions";
 import DialogContent from "@material-ui/core/DialogContent";
 import DialogContentText from "@material-ui/core/DialogContentText";
-import TextField from "@material-ui/core/TextField";
-import DialogActions from "@material-ui/core/DialogActions";
-import Button from "@material-ui/core/Button";
+import DialogTitle from "@material-ui/core/DialogTitle";
 import Select from "@material-ui/core/Select";
-import { Slider } from "@material-ui/core";
+import TextField from "@material-ui/core/TextField";
 
 import { listen } from "@tauri-apps/api/event";
 
 import "./Home.css";
 
+const useLocalStorageState = (key, defaultValue) => {
+  const [state, setState] = useState(() => {
+    const storedValue = localStorage.getItem(key);
+    return storedValue !== null ? JSON.parse(storedValue) : defaultValue;
+  });
+
+  useEffect(() => {
+    localStorage.setItem(key, JSON.stringify(state));
+  }, [key, state]);
+
+  return [state, setState];
+};
+
 function Home() {
-  const [{ numResults, openAIKey, history, model }, dispatch] = useStateValue();
-  const [key, setKey] = useState(openAIKey || ""); // will be initialized with the current value of the key in the context
-  const [gptModel, setGptModel] = useState(model || "gpt-4");
+  const [{ numResults, history }, dispatch] = useStateValue();
+  const [openAIKey, setOpenAIKey] = useLocalStorageState("openAIKey", "sk-");
+  const [gptModel, setGptModel] = useLocalStorageState("gptModel", "gpt-4o-mini");
   const [open, setOpen] = useState(false);
   const [openHistory, setOpenHistory] = useState(false);
-
-  const [menuPayload, setMenuPayload] = useState("");
-  const [menuOpen, setMenuOpen] = useState(false);
+  const [setMenuPayload] = useState("");
+  const [setMenuOpen] = useState(false);
 
   const handleClickOpenHistory = () => {
     setOpenHistory(true);
@@ -43,39 +55,32 @@ function Home() {
     setOpenHistory(false);
   };
 
-  const handleKeyChange = event => {
-    setKey(event.target.value);
-  };
+  const handleKeyChange = useCallback(event => {
+    setOpenAIKey(event.target.value);
+  }, []);
 
   const handleClickOpen = () => {
     setOpen(true);
   };
 
-  const handleClose = () => {
-    setOpen(false);
-  };
-
   const handleCancel = () => {
-    setKey(openAIKey); // reset the key state to the current value in the context
+    setOpenAIKey(openAIKey); // reset the key state to the current value in the context
     setOpen(false);
   };
 
-  const handleSave = () => {
+  const handleSaveSettings = useCallback(() => {
     dispatch({
       type: actionTypes.SET_OPENAI_KEY,
-      openAIKey: key,
+      openAIKey,
     });
     dispatch({
       type: actionTypes.SET_GPT_MODEL,
       model: gptModel,
     });
-    // Save the OpenAI key to local storage
-    localStorage.setItem("openAIKey", key);
-    localStorage.setItem("gptModel", gptModel);
     setOpen(false);
-  };
+  }, [dispatch, openAIKey, gptModel]);
 
-  const handleClearHistory = () => {
+  const handleClearHistory = useCallback(() => {
     // Clear the search history from the state
     dispatch({ type: actionTypes.CLEAR_HISTORY });
 
@@ -84,7 +89,7 @@ function Home() {
 
     // Close the history dialog
     handleCloseHistory();
-  };
+  }, []);
 
   const onNumResultsChange = (event, value) => {
     dispatch({
@@ -93,31 +98,18 @@ function Home() {
     });
   };
 
-  const handleModelChange = event => {
-    setGptModel(event.target.value);
-  };
-
   // Tauri
   useEffect(() => {
-    listen("menu-event", e => {
+    const unlisten = listen("menu-event", e => {
       setMenuPayload(e.payload);
       setMenuOpen(true);
-    });
-  }, []);
-
-  // Tauri
-  useEffect(() => {
-    if (menuOpen) {
-      switch (menuPayload) {
-        case "clear-event":
-          handleClearHistory();
-          break;
-        default:
-          break;
+      if (e.payload === "clear-event") {
+        handleClearHistory();
       }
-      setMenuOpen(false);
-    }
-  }, [menuOpen]);
+    });
+
+    return () => unlisten();
+  }, [handleClearHistory]);
 
   useEffect(() => {
     // Get the history from localStorage and parse it back into an array
@@ -144,7 +136,7 @@ function Home() {
     // Load the OpenAI key from local storage when the component mounts
     const savedKey = localStorage.getItem("openAIKey");
     if (savedKey) {
-      setKey(savedKey);
+      setOpenAIKey(savedKey);
       dispatch({
         type: actionTypes.SET_OPENAI_KEY,
         openAIKey: savedKey,
@@ -179,13 +171,13 @@ function Home() {
 
       <Dialog
         open={open}
-        onClose={handleClose}
+        onClose={() => setOpen(false)}
         aria-labelledby="form-dialog-title"
       >
         <DialogTitle id="form-dialog-title">Settings</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Please enter your OpenAI key (GPT-4 preferable):
+            Please enter your OpenAI key (gpt-4o-mini preferable):
           </DialogContentText>
           <TextField
             autoFocus
@@ -199,12 +191,16 @@ function Home() {
           />
 
           <DialogContentText>Please choose GPT model: </DialogContentText>
-          <Select native value={gptModel} onChange={handleModelChange}>
-            <option value={"gpt-4"}>gpt-4</option>
-            <option value={"gpt-3.5-turbo"}>gpt-3.5-turbo</option>
+          <Select
+            native
+            value={gptModel}
+            onChange={event => setGptModel(event.target.value)}
+          >
+            <option value={"gpt-4o-mini"}>gpt-4o-mini</option>
+            <option value={"gpt-4o"}>gpt-4o</option>
           </Select>
 
-          <DialogContentText>Please select K: </DialogContentText>
+          <DialogContentText>How many book recommendations: </DialogContentText>
           <Slider
             style={{ width: "50vh", margin: "0 auto" }}
             aria-label="K"
@@ -222,7 +218,7 @@ function Home() {
           <Button onClick={handleCancel} color="primary">
             Cancel
           </Button>
-          <Button onClick={handleSave} color="primary">
+          <Button onClick={handleSaveSettings} color="primary">
             Save
           </Button>
         </DialogActions>
@@ -237,7 +233,10 @@ function Home() {
       >
         <DialogTitle id="form-dialog-title">
           Search History
-          <IconButton style={{ float: "right" }} onClick={handleClearHistory}>
+          <IconButton
+            style={{ float: "right" }}
+            onClick={() => setOpenHistory(false)}
+          >
             <ClearAllIcon />
           </IconButton>
         </DialogTitle>

@@ -4,7 +4,7 @@ export const initialState = {
   openAIKey: "sk-",
   error: null,
   history: [],
-  model: "gpt-4",
+  model: "gpt-4o-mini",
 };
 
 export const actionTypes = {
@@ -19,7 +19,7 @@ export const actionTypes = {
 };
 
 const reducer = (state, action) => {
-  console.log(action); // Good for debugging
+  // console.log(action); // Good for debugging
 
   switch (action.type) {
     case actionTypes.SET_SEARCH_TERM:

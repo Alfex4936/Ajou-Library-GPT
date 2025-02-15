@@ -1,5 +1,5 @@
 import React from "react";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Link } from "react-router-dom";
 
 import SearchIcon from "@material-ui/icons/Search";
@@ -44,31 +44,24 @@ export default function SearchResult() {
   const [tabClickCount, setTabClickCount] = useState(0);
 
   // Use a function to set selectedTab state and increase tabClickCount
-  const setSelectedTabAndUpdateClickCount = newTab => {
+  const setSelectedTabAndUpdateClickCount = useCallback(newTab => {
     setSelectedTab(newTab);
     setTabClickCount(prevCount => prevCount + 1);
-  };
+  }, []);
 
   // Add a new piece of state for the filtered results
   // const [filteredData, setFilteredData] = useState([]);
 
-  const handleCloseError = (event, reason) => {
+  const handleCloseError = useCallback((event, reason) => {
     if (reason === "clickaway") {
       return;
     }
-
-    // dispatch({
-    //   type: actionTypes.SET_ERROR,
-    //   error: null,
-    // });
-  };
+    // Error handling logic here...
+  }, []);
 
   useEffect(() => {
-    if (loading) {
-      setLoadingStarted(true);
-    } else if (loadingStarted && !error) {
-      setOpenSuccess(true);
-    }
+    if (loading) setLoadingStarted(true);
+    else if (loadingStarted && !error) setOpenSuccess(true);
   }, [loading, error, loadingStarted]);
 
   useEffect(() => {
@@ -79,13 +72,10 @@ export default function SearchResult() {
   const filteredData = useMemo(() => {
     switch (selectedTab) {
       case "Books":
-        console.log("book: ", data);
         return data?.books || [];
       case "RISS":
-        console.log("riss: ", data);
         return data?.riss || [];
       default:
-        console.log("All: ", data);
         return data || [];
     }
   }, [data, selectedTab]);

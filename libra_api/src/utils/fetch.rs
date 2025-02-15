@@ -41,7 +41,7 @@ pub async fn generate_query(
     model: &str,
     openai_client: &Client<OpenAIConfig>,
 ) -> Vec<String> {
-    println!("Starting... {model}");
+    // println!("Starting... {model}");
     // let config = OpenAIConfig::new().with_api_key(openai_key);
     // let openai_client = async_openai::Client::with_config(config);
 
@@ -76,9 +76,12 @@ pub async fn generate_query(
 
     let response = match openai_client.chat().create(request).await {
         Ok(response) => response,
-        Err(_) => return vec![],
+        Err(e) => {
+            println!("Failed to generate query... {:#?}", e);
+            return vec![]
+        },
     };
-    println!("Loaded...");
+    // println!("Loaded...");
 
     let query_text: String = response.choices[0]
         .message
@@ -155,7 +158,7 @@ pub async fn fetch_embedding(
     openai_client: &Client<OpenAIConfig>,
 ) -> Result<Vec<f32>, anyhow::Error> {
     let request = CreateEmbeddingRequestArgs::default()
-        .model("text-embedding-ada-002")
+        .model("text-embedding-3-small")
         .input([text])
         .build()?;
 

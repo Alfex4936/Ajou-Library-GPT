@@ -1,5 +1,5 @@
 # Stage 1: Build the application
-FROM rust:latest as builder
+FROM rust:1-bookworm as builder
 WORKDIR /app
 
 # Copy the source code and dependencies
@@ -13,14 +13,11 @@ RUN chmod +x upx && \
     rm upx
 
 # Stage 2: Create the final image GLIB_2.29
-FROM debian:bullseye-slim
+FROM debian:bookworm-slim
 WORKDIR /app
 
 # Install necessary dependencies
-RUN apt-get update && \
-    apt-get install -y libssl1.1 ca-certificates && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt install -y openssl
 
 # Copy the binary from the builder stage
 COPY --from=builder /app/target/release/libra_api /app/libra_api
