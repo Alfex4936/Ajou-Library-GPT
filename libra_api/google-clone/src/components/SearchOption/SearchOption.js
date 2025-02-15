@@ -10,7 +10,7 @@ export default function SearchOption({
   activeTab,
   loading,
 }) {
-  console.log(title, activeTab);
+  // console.log(title, activeTab);
   return (
     <div
       className={`searchOption ${

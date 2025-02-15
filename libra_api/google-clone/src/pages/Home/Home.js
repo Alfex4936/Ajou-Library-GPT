@@ -21,18 +21,17 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 import Select from "@material-ui/core/Select";
 import TextField from "@material-ui/core/TextField";
 
-import { listen } from "@tauri-apps/api/event";
 
 import "./Home.css";
 
 const useLocalStorageState = (key, defaultValue) => {
   const [state, setState] = useState(() => {
     const storedValue = localStorage.getItem(key);
-    return storedValue !== null ? JSON.parse(storedValue) : defaultValue;
+    return storedValue !== null ? storedValue : defaultValue; // No JSON.parse
   });
 
   useEffect(() => {
-    localStorage.setItem(key, JSON.stringify(state));
+    localStorage.setItem(key, state); // No JSON.stringify
   }, [key, state]);
 
   return [state, setState];
@@ -40,12 +39,12 @@ const useLocalStorageState = (key, defaultValue) => {
 
 function Home() {
   const [{ numResults, history }, dispatch] = useStateValue();
-  const [openAIKey, setOpenAIKey] = useLocalStorageState("openAIKey", "sk-");
-  const [gptModel, setGptModel] = useLocalStorageState("gptModel", "gpt-4o-mini");
+  const [openAIKey, setOpenAIKey] = useLocalStorageState("openAIKey", 'sk-');
+  const [gptModel, setGptModel] = useLocalStorageState("gptModel", 'gpt-4o-mini');
   const [open, setOpen] = useState(false);
   const [openHistory, setOpenHistory] = useState(false);
-  const [setMenuPayload] = useState("");
-  const [setMenuOpen] = useState(false);
+  // const [setMenuPayload] = useState("");
+  // const [setMenuOpen] = useState(false);
 
   const handleClickOpenHistory = () => {
     setOpenHistory(true);
@@ -99,17 +98,17 @@ function Home() {
   };
 
   // Tauri
-  useEffect(() => {
-    const unlisten = listen("menu-event", e => {
-      setMenuPayload(e.payload);
-      setMenuOpen(true);
-      if (e.payload === "clear-event") {
-        handleClearHistory();
-      }
-    });
+  // useEffect(() => {
+  //   const unlisten = listen("menu-event", e => {
+  //     setMenuPayload(e.payload);
+  //     setMenuOpen(true);
+  //     if (e.payload === "clear-event") {
+  //       handleClearHistory();
+  //     }
+  //   });
 
-    return () => unlisten();
-  }, [handleClearHistory]);
+  //   return () => unlisten();
+  // }, [handleClearHistory]);
 
   useEffect(() => {
     // Get the history from localStorage and parse it back into an array
