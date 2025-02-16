@@ -1,13 +1,13 @@
 // Search.js
-import React, { useState, useEffect } from "react"; // import useEffect
+import React, { useEffect, useState } from "react"; // import useEffect
 import { useNavigate } from "react-router-dom";
 import { useStateValue } from "../../StateContext";
 import { actionTypes } from "../../reducer";
 
-import SearchIcon from "@material-ui/icons/Search";
-import MicIcon from "@material-ui/icons/Mic";
-import GraphicEqIcon from "@material-ui/icons/GraphicEq";
 import { Button } from "@material-ui/core";
+import GraphicEqIcon from "@material-ui/icons/GraphicEq";
+import MicIcon from "@material-ui/icons/Mic";
+import SearchIcon from "@material-ui/icons/Search";
 
 import { useVoice } from "../../hooks/useVoice";
 
@@ -18,6 +18,7 @@ function Search({ hideButtons = false, loading = false }) {
   const { text, listen, voiceSupported, isListening } = useVoice();
 
   const [input, setInput] = useState(term || "");
+  const [maxLength, setMaxLength] = useState(50); 
 
   const navigate = useNavigate();
 
@@ -29,6 +30,7 @@ function Search({ hideButtons = false, loading = false }) {
   // update the input state when voice input comes
   useEffect(() => {
     if (text !== "") {
+
       setInput(text);
     }
   }, [text]);
@@ -40,7 +42,7 @@ function Search({ hideButtons = false, loading = false }) {
       return; // Don't perform search while loading
     }
 
-    console.log("You hit the search button >>", input);
+    // console.log("You hit the search button >>", input);
 
     dispatch({
       type: actionTypes.SET_SEARCH_TERM,
@@ -58,6 +60,15 @@ function Search({ hideButtons = false, loading = false }) {
     }
   };
 
+  const handleInputChange = (e) => {
+    if (e.target.value.length <= maxLength) {
+      setInput(e.target.value);
+    } else {
+      // console.log(`Input length exceeded the limit of ${maxLength} characters.`);
+      alert(`Maximum input length is ${maxLength} characters.`);
+    }
+  };
+
   return (
     <form className="search">
       <div className="search__input">
@@ -67,7 +78,12 @@ function Search({ hideButtons = false, loading = false }) {
           onClick={search}
           className="search__inputIcon"
         />
-        <input value={input} onChange={e => setInput(e.target.value)} />
+        <input
+          value={input}
+          onChange={handleInputChange} // Use handleInputChange to control input length
+          maxLength={maxLength} // Set the maxLength attribute
+          placeholder={`Enter search term (max ${maxLength} characters)`} // Optional placeholder to indicate limit
+        />
         <MicIcon
           onClick={voiceSupported ? listen : undefined}
           style={{

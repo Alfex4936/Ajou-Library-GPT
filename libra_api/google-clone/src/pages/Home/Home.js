@@ -50,13 +50,14 @@ function Home() {
     setOpenHistory(true);
   };
 
-  const handleCloseHistory = () => {
+  // Memoize handleCloseHistory using useCallback
+  const handleCloseHistory = useCallback(() => {
     setOpenHistory(false);
-  };
+  }, [setOpenHistory]); // Dependency is setOpenHistory (stable from useState)
 
   const handleKeyChange = useCallback(event => {
     setOpenAIKey(event.target.value);
-  }, []);
+  }, [setOpenAIKey]);
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -88,7 +89,7 @@ function Home() {
 
     // Close the history dialog
     handleCloseHistory();
-  }, []);
+  }, [dispatch, handleCloseHistory]);
 
   const onNumResultsChange = (event, value) => {
     dispatch({
@@ -234,7 +235,7 @@ function Home() {
           Search History
           <IconButton
             style={{ float: "right" }}
-            onClick={() => setOpenHistory(false)}
+            onClick={handleClearHistory} // Changed here to call handleClearHistory
           >
             <ClearAllIcon />
           </IconButton>

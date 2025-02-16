@@ -1,4 +1,4 @@
-use std::{collections::HashMap, time::Duration};
+use std::{collections::{HashMap, HashSet}, time::Duration};
 
 use async_openai::{
     config::OpenAIConfig,
@@ -89,10 +89,13 @@ pub async fn generate_query(
         .clone()
         .unwrap_or_default();
 
-    let mut queries: Vec<String> = query_text
-        .split(", ")
-        .map(|s: &str| s.trim().to_string())
+    let queries_set: HashSet<String> = query_text
+        .split(&['\n', ',', '\t', ';'][..]) // Split by multiple delimiters
+        .map(|s: &str| s.trim().to_string()) // Trim whitespace
+        .filter(|s| !s.is_empty())          // Remove empty strings
         .collect();
+
+    let mut queries: Vec<String> = queries_set.into_iter().collect(); // Convert back to Vec
 
     if let Some(last) = queries.last_mut() {
         *last = last.trim_end_matches('.').to_string();
@@ -158,7 +161,8 @@ pub async fn fetch_embedding(
     openai_client: &Client<OpenAIConfig>,
 ) -> Result<Vec<f32>, anyhow::Error> {
     let request = CreateEmbeddingRequestArgs::default()
-        .model("text-embedding-3-small")
+        .model("text-embedding-ada-002")
+        // .model("text-embedding-3-small")
         .input([text])
         .build()?;
 
@@ -206,13 +210,21 @@ pub fn cosine_similarity(a: &[f32], b: &[f32]) -> f32 {
 
 pub async fn fetch_books(keyword: &str) -> Result<Vec<Value>, anyhow::Error> {
     let url = format!("https://library.ajou.ac.kr/pyxis-api/1/collections/1/search?all=1|k|a|{}&facet=false&max=15", keyword);
-    let response = HTTP_CLIENT.get(&url).send().await?.json::<Value>().await?;
+    let response = HTTP_CLIENT.get(&url).send().await?;
 
-    if response["code"] == "success.noRecord" {
+    if !response.status().is_success() { // Check for HTTP errors
+        return Err(anyhow::Error::msg(format!("Library API error: Status code {}", response.status())));
+    }
+
+    let response_json: Value = response.json().await?;
+
+    if response_json["code"] == "success.noRecord" {
         Ok(vec![])
-    } else {
-        let books = response["data"]["list"].as_array().unwrap().clone();
+    } else if response_json["code"] == "success" { // Check for successful API response
+        let books = response_json["data"]["list"].as_array().unwrap_or(&vec![]).clone(); // Handle missing "list"
         Ok(books)
+    } else {
+        Err(anyhow::Error::msg(format!("Library API error: {}", response_json["code"]))) // Generic API error
     }
 }
 

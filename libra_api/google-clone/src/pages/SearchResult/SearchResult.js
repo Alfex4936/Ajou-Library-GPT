@@ -1,14 +1,13 @@
-import React from "react";
-import { useState, useEffect, useCallback, useMemo } from "react";
+import PropTypes from 'prop-types'; // Import PropTypes for better component documentation
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 
-import SearchIcon from "@material-ui/icons/Search";
-import CircularProgress from "@material-ui/core/CircularProgress"; // import the loading circle
-
-import BookIcon from "@material-ui/icons/Book";
-import MenuBook from "@material-ui/icons/MenuBook";
-import CloseIcon from "@material-ui/icons/Close";
+import CircularProgress from "@material-ui/core/CircularProgress";
 import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
+import BookIcon from "@material-ui/icons/Book";
+import CloseIcon from "@material-ui/icons/Close";
+import MenuBook from "@material-ui/icons/MenuBook";
+import SearchIcon from "@material-ui/icons/Search";
 
 import useLibraSearch from "../../hooks/useLibraSearch/useLibraSearch";
 import { useStateValue } from "../../StateContext";
@@ -19,56 +18,47 @@ import SearchOption from "../../components/SearchOption/SearchOption";
 import BookDetail from "../../components/Book/BookDetail";
 import RissDetail from "../../components/RISS/RissDetail";
 
+import IconButton from "@material-ui/core/IconButton";
 import Snackbar from "@material-ui/core/Snackbar";
 import MuiAlert from "@material-ui/lab/Alert";
-import IconButton from "@material-ui/core/IconButton";
 
-import Divider from "@material-ui/core/Divider";
 import Chip from "@material-ui/core/Chip";
+import Divider from "@material-ui/core/Divider";
 
 import "./SearchResult.css";
 
-function Alert(props) {
-  return <MuiAlert elevation={6} variant="filled" {...props} />;
-}
+const Alert = React.forwardRef(function Alert(props, ref) { // Use forwardRef for Alert component
+  return <MuiAlert elevation={6} variant="filled" {...props} ref={ref} />;
+});
+Alert.propTypes = { // Add PropTypes for Alert component
+  elevation: PropTypes.number,
+  variant: PropTypes.string,
+};
 
-export default function SearchResult() {
+function SearchResult() {
   const [{ term, error }] = useStateValue();
   const { data, loading } = useLibraSearch(term); // LIVE API Call
 
-  // Add a new piece of state for the selected tab
+
   const [selectedTab, setSelectedTab] = useState("All");
   const [openSuccess, setOpenSuccess] = useState(false);
-  const [loadingStarted, setLoadingStarted] = useState(false);
-  // Add a new piece of state for tracking tab clicks
-  const [tabClickCount, setTabClickCount] = useState(0);
 
-  // Use a function to set selectedTab state and increase tabClickCount
-  const setSelectedTabAndUpdateClickCount = useCallback(newTab => {
+  const setSelectedTabCallback = useCallback(newTab => {
     setSelectedTab(newTab);
-    setTabClickCount(prevCount => prevCount + 1);
   }, []);
 
-  // Add a new piece of state for the filtered results
-  // const [filteredData, setFilteredData] = useState([]);
-
-  const handleCloseError = useCallback((event, reason) => {
-    if (reason === "clickaway") {
-      return;
+  useEffect(() => {
+    if (!loading && !error && term && data) { // ADDED: Check if data is truthy
+      setOpenSuccess(true);
+    } else {
+      setOpenSuccess(false); // Optionally, ensure success toast is closed if conditions are not met
     }
-    // Error handling logic here...
-  }, []);
+  }, [loading, error, term, data]); // ADDED: data to the dependency array
 
   useEffect(() => {
-    if (loading) setLoadingStarted(true);
-    else if (loadingStarted && !error) setOpenSuccess(true);
-  }, [loading, error, loadingStarted]);
+    window.scrollTo({ top: 0, behavior: "auto" });
+  }, [selectedTab]); // Directly use selectedTab as dependency
 
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "auto" }); // Use 'auto' to override ongoing scrolls
-  }, [tabClickCount]); // Use tabClickCount as dependency
-
-  // useMemo to memoize the calculation of filtered data
   const filteredData = useMemo(() => {
     switch (selectedTab) {
       case "Books":
@@ -79,6 +69,128 @@ export default function SearchResult() {
         return data || [];
     }
   }, [data, selectedTab]);
+
+  const handleCloseError = useCallback((event, reason) => {
+    if (reason === "clickaway") {
+      return;
+    }
+    // Error handling logic...
+  }, []);
+
+  const renderSearchResults = useMemo(() => { // Memoize the rendering logic for better performance
+    if (!term) {
+      return (
+        <div className="searchResult__items">
+          <p className="searchResult__itemsCount" style={{ whiteSpace: "pre-line" }}>
+            {error}
+          </p>
+        </div>
+      );
+    }
+    return (
+      <div className="searchResult__items">
+        {loading ? (
+          <div>
+            <p className="searchResult__itemsCount">Loading...</p>
+            <CircularProgress />
+          </div>
+        ) : (
+          <>
+            {filteredData &&
+            ((Array.isArray(filteredData) && filteredData.length > 0) ||
+              (filteredData?.books?.length || 0) +
+                (filteredData?.riss?.length || 0) >
+                0) ? (
+              <>
+                <p className="searchResult__itemsCount" style={{ whiteSpace: "pre-line" }}>
+                  About{" "}
+                  {Array.isArray(filteredData)
+                    ? filteredData.length
+                    : (filteredData?.books?.length || 0) +
+                      (filteredData?.riss?.length || 0)}{" "}
+                  results for {term}
+                  <br />
+                  <br />
+                  {data?.queries.map((query, index) => (
+                    <Chip
+                      style={{ marginRight: "10px", marginBottom: "10px" }}
+                      key={index}
+                      label={query.query}
+                      variant="outlined"
+                    />
+                  ))}
+                </p>
+
+                {selectedTab === "All" && (data?.books || data?.riss) && ( // Conditionally render "All" tab content
+                  <>
+                    <Divider style={{ marginTop: "16px", marginBottom: "16px" }} variant="middle" />
+
+                    {data?.books && data.books.length > 0 && ( // Conditionally render Books section
+                      <>
+                        <a href="#" className="searchResult__itemLink">
+                          Books - <ArrowDropDownIcon />
+                        </a>
+                        {data.books.map(item => (
+                          <BookDetail
+                            key={item.book_id}
+                            bookId={item.book_id}
+                            details={item.details}
+                            rentPlace={item.rent_place}
+                            rentable={item.rentable}
+                          />
+                        ))}
+                        <Divider style={{ marginTop: "16px", marginBottom: "16px" }} variant="middle" />
+                      </>
+                    )}
+
+                    {data?.riss && data.riss.length > 0 && ( // Conditionally render RISS section
+                      <>
+                        <a href="#" className="searchResult__itemLink">
+                          RISS - <ArrowDropDownIcon />
+                        </a>
+                        {data.riss.map(item => (
+                          <RissDetail key={item.id} id={item.id} details={item.details} />
+                        ))}
+                      </>
+                    )}
+                  </>
+                )}
+
+                {selectedTab === "Books" && Array.isArray(filteredData) && (
+                  filteredData.map(item => (
+                    <BookDetail
+                      key={item.book_id}
+                      bookId={item.book_id}
+                      details={item.details}
+                      rentPlace={item.rent_place}
+                      rentable={item.rentable}
+                    />
+                  ))
+                )}
+
+                {selectedTab === "RISS" && Array.isArray(filteredData) && (
+                  filteredData.map(item => (
+                    <RissDetail key={item.id} id={item.id} details={item.details} />
+                  ))
+                )}
+              </>
+            ) : (
+              <a className="searchResult__itemTitle">
+                <h2>
+                  No results found.
+                  <br />
+                  Check OpenAI API Key.
+                  <br />
+                  {!!error ? `${error}` : ""}
+                </h2>
+              </a>
+            )}
+          </>
+        )}
+      </div>
+    );
+  }, [loading, error, term, filteredData, selectedTab, data?.queries, data?.books, data?.riss]); // Add all dependencies for memoization
+
 
   return (
     <div className="searchResult">
@@ -99,147 +211,31 @@ export default function SearchResult() {
               <SearchOption
                 title="All"
                 icon={<SearchIcon />}
-                setSelectedTab={setSelectedTabAndUpdateClickCount}
+                setSelectedTab={setSelectedTabCallback}
                 activeTab={selectedTab}
                 loading={loading}
               />
               <SearchOption
                 title="Books"
                 icon={<BookIcon />}
-                setSelectedTab={setSelectedTabAndUpdateClickCount}
+                setSelectedTab={setSelectedTabCallback}
                 activeTab={selectedTab}
                 loading={loading}
               />
               <SearchOption
                 title="RISS"
                 icon={<MenuBook />}
-                setSelectedTab={setSelectedTabAndUpdateClickCount}
+                setSelectedTab={setSelectedTabCallback}
                 activeTab={selectedTab}
                 loading={loading}
               />
             </div>
-            {/* <div className="searchResult__optionsRight">
-              <SearchOption title="Settings" />
-            </div> */}
           </div>
         </div>
       </div>
-      {!term && (
-        <div className="searchResult__items">
-          <p
-            className="searchResult__itemsCount"
-            style={{ whiteSpace: "pre-line" }}
-          >
-            {error}
-          </p>
-        </div>
-      )}
-      {term && (
-        <div className="searchResult__items">
-          {loading ? (
-            <div>
-              <p className="searchResult__itemsCount">Loading...</p>
-              <CircularProgress /> {/* Loading circle */}
-            </div>
-          ) : (
-            <>
-              {filteredData &&
-              ((Array.isArray(filteredData) && filteredData.length > 0) ||
-                (filteredData?.books?.length || 0) +
-                  (filteredData?.riss?.length || 0) >
-                  0) ? (
-                <>
-                  <p
-                    className="searchResult__itemsCount"
-                    style={{ whiteSpace: "pre-line" }}
-                  >
-                    About{" "}
-                    {Array.isArray(filteredData)
-                      ? filteredData.length
-                      : (filteredData?.books?.length || 0) +
-                        (filteredData?.riss?.length || 0)}{" "}
-                    results for {term}
-                    <br />
-                    <br />
-                    {data?.queries.map((query, index) => (
-                      <Chip
-                        style={{ marginRight: "10px", marginBottom: "10px" }}
-                        key={index}
-                        label={query.query}
-                        variant="outlined"
-                      />
-                      // <span key={index}>{query.query} </span>
-                    ))}
-                  </p>
 
-                  {selectedTab === "All" &&
-                    Array.isArray(filteredData?.books) &&
-                    Array.isArray(filteredData?.riss) && (
-                      <>
-                        <Divider
-                          style={{ marginTop: "16px", marginBottom: "16px" }}
-                          variant="middle"
-                        />
+      {renderSearchResults} {/* Render search results using memoized component */}
 
-                        <a href="#" className="searchResult__itemLink">
-                          Books -
-                          <ArrowDropDownIcon />
-                        </a>
-
-                        {filteredData?.books.map(item => (
-                          <BookDetail
-                            key={item.book_id}
-                            bookId={item.book_id}
-                            details={item.details}
-                            rentPlace={item.rent_place}
-                            rentable={item.rentable}
-                          />
-                        ))}
-
-                        <a href="#" className="searchResult__itemLink">
-                          RISS -
-                          <ArrowDropDownIcon />
-                        </a>
-
-                        {filteredData?.riss.map(item => (
-                          <RissDetail id={item.id} details={item.details} />
-                        ))}
-                      </>
-                    )}
-
-                  {selectedTab === "Books" &&
-                    Array.isArray(filteredData) &&
-                    filteredData.map(item => (
-                      <BookDetail
-                        key={item.book_id}
-                        bookId={item.book_id}
-                        details={item.details}
-                        rentPlace={item.rent_place}
-                        rentable={item.rentable}
-                      />
-                    ))}
-
-                  {selectedTab === "RISS" &&
-                    Array.isArray(filteredData) &&
-                    filteredData.map(item => (
-                      <RissDetail id={item.id} details={item.details} />
-                    ))}
-                </>
-              ) : (
-                <a className="searchResult__itemTitle">
-                  <h2>
-                    No results found.
-                    <br />
-                    Check OpenAI API Key.
-                    <br />
-                    {!!error ? `${error}` : ""}
-                  </h2>
-                </a>
-              )}
-            </>
-          )}
-        </div>
-      )}
       <Snackbar
         open={openSuccess}
         anchorOrigin={{
@@ -247,16 +243,10 @@ export default function SearchResult() {
           horizontal: "left",
         }}
         autoHideDuration={5000}
-        onClose={() => {
-          handleCloseError();
-          setOpenSuccess(false);
-        }}
+        onClose={() => setOpenSuccess(false)} // Directly setOpenSuccess(false)
       >
         <Alert
-          onClose={() => {
-            handleCloseError();
-            setOpenSuccess(false);
-          }}
+          onClose={() => setOpenSuccess(false)} // Directly setOpenSuccess(false)
           severity="success"
           sx={{ width: "100%" }}
         >
@@ -268,10 +258,10 @@ export default function SearchResult() {
           vertical: "bottom",
           horizontal: "left",
         }}
-        open={!!error} // <-- the snackbar is open when there is an error
-        autoHideDuration={5000} // <-- the snackbar will automatically close after 3 seconds
-        onClose={handleCloseError} // <-- you need a function to close the snackbar
-        message={error} // <-- the error message will be displayed in the snackbar
+        open={!!error}
+        autoHideDuration={5000}
+        onClose={handleCloseError}
+        message={error}
         action={
           <React.Fragment>
             <IconButton
@@ -288,3 +278,5 @@ export default function SearchResult() {
     </div>
   );
 }
+
+export default SearchResult;

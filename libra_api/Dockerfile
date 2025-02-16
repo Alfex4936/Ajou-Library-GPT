@@ -17,7 +17,7 @@ FROM debian:bookworm-slim
 WORKDIR /app
 
 # Install necessary dependencies
-RUN apt-get update && apt install -y openssl
+RUN apt-get update && apt install -y openssl ca-certificates
 
 # Copy the binary from the builder stage
 COPY --from=builder /app/target/release/libra_api /app/libra_api

@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useStateValue } from "../../StateContext";
 import { actionTypes } from "../../reducer";
 
 export const useLibraSearch = term => {
+
   const [{ numResults, openAIKey, model }, dispatch] = useStateValue();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -11,6 +12,7 @@ export const useLibraSearch = term => {
   // useEffect for error
   useEffect(() => {
     if (error) {
+
       dispatch({ type: actionTypes.SET_ERROR, error: error });
     }
   }, [error, dispatch]);
