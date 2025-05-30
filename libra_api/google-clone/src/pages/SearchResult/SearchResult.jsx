@@ -56,7 +56,11 @@ function SearchResult() {
   }, [loading, combinedError, term, data]); // Use combinedError
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "auto" });
+    try {
+      window.scrollTo({ top: 0, behavior: "auto" });
+    } catch (error) {
+      console.warn("Scroll error:", error);
+    }
   }, [selectedTab]); // Directly use selectedTab as dependency
 
   const filteredData = useMemo(() => {
@@ -65,8 +69,8 @@ function SearchResult() {
         return data?.books || [];
       case "RISS":
         return data?.riss || [];
-      default:
-        return data || [];
+      default: // "All" tab - return empty array since we handle this case separately in the render
+        return [];
     }
   }, [data, selectedTab]);
 
@@ -96,18 +100,15 @@ function SearchResult() {
           </div>
         ) : (
           <>
-            {filteredData &&
-              ((Array.isArray(filteredData) && filteredData.length > 0) ||
-                (filteredData?.books?.length || 0) +
-                (filteredData?.riss?.length || 0) >
-                0) ? (
+            {/* Check if we have data to display */}
+            {(selectedTab === "All" && (data?.books?.length > 0 || data?.riss?.length > 0)) ||
+             (selectedTab !== "All" && filteredData.length > 0) ? (
               <>
                 <p className="searchResult__itemsCount" style={{ whiteSpace: "pre-line" }}>
                   {t('search.results')} {" "}
-                  {Array.isArray(filteredData)
-                    ? filteredData.length
-                    : (filteredData?.books?.length || 0) +
-                    (filteredData?.riss?.length || 0)}{" "}
+                  {selectedTab === "All" 
+                    ? (data?.books?.length || 0) + (data?.riss?.length || 0)
+                    : filteredData.length}{" "}
                   {t('search.results')} for {term}
                   <br />
                   <br />
