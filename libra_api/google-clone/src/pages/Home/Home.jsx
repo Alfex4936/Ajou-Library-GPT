@@ -42,15 +42,40 @@ function Home() {
   const [openHistory, setOpenHistory] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // Ensure API key always starts with "sk-"
+  const displayKey = openAIKey || 'sk-';
+
   const handleClickOpenHistory = () => {
     setOpenHistory(true);
   };
 
   const handleCloseHistory = useCallback(() => {
     setOpenHistory(false);
-  }, [setOpenHistory]);
+  }, [setOpenHistory]);  const handleKeyDown = useCallback((event) => {
+    const input = event.target;
+    const cursorPosition = input.selectionStart;
+    
+    // Prevent deletion of "sk-" prefix
+    if ((event.key === 'Backspace' || event.key === 'Delete') && cursorPosition <= 3) {
+      event.preventDefault();
+      // Move cursor to position after "sk-"
+      setTimeout(() => {
+        input.setSelectionRange(3, 3);
+      }, 0);
+    }
+  }, []);
+
   const handleKeyChange = useCallback(event => {
-    setOpenAIKey(event.target.value);
+    const value = event.target.value;
+    // Ensure the key always starts with "sk-"
+    if (value === '' || value === 'sk' || value === 's') {
+      setOpenAIKey('sk-');
+    } else if (value.startsWith('sk-')) {
+      setOpenAIKey(value);
+    } else {
+      // If user pastes a key without sk-, add it
+      setOpenAIKey('sk-' + value);
+    }
   }, [setOpenAIKey]);
 
   const handleTogglePasswordVisibility = () => {
@@ -203,31 +228,32 @@ function Home() {
           {t('settings.title')}
         </DialogTitle>
         <DialogContent className="home__dialogContent">          <TextField
-          autoFocus
-          margin="dense"
-          value={openAIKey}
-          id="openai-key"
-          label={t('settings.openaiKey')}
-          type={showPassword ? 'text' : 'password'}
-          onChange={handleKeyChange}
-          fullWidth
-          variant="outlined"
-          className="home__textField"
-          helperText={t('settings.openaiKeyHelper')}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton
-                  onClick={handleTogglePasswordVisibility}
-                  edge="end"
-                  aria-label={showPassword ? t('settings.hidePassword') : t('settings.showPassword')}
-                >
-                  {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-        />
+            autoFocus
+            margin="dense"
+            value={displayKey}
+            id="openai-key"
+            label={t('settings.openaiKey')}
+            type={showPassword ? 'text' : 'password'}
+            onChange={handleKeyChange}
+            onKeyDown={handleKeyDown}
+            fullWidth
+            variant="outlined"
+            className="home__textField"
+            helperText={t('settings.openaiKeyHelper')}
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    onClick={handleTogglePasswordVisibility}
+                    edge="end"
+                    aria-label={showPassword ? t('settings.hidePassword') : t('settings.showPassword')}
+                  >
+                    {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
 
           <div className="home__fieldGroup">
             <Typography variant="subtitle1" className="home__fieldLabel">

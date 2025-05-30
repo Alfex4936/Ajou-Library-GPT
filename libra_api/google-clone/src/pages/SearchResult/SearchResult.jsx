@@ -116,7 +116,7 @@ function SearchResult() {
                   {t('search.results')} {" "}
                   {selectedTab === "All" 
                     ? (data?.books?.length || 0) + (data?.riss?.length || 0)
-                    : filteredData.length}{" "}
+                    : filteredData.length}{" | "}
                   {t('search.results')} for {term}
                   <br />
                   <br />
