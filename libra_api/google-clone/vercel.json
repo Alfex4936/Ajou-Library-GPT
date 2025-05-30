@@ -4,7 +4,6 @@
   "outputDirectory": "build",
   "installCommand": "npm install --legacy-peer-deps",
   "framework": null,
-  "functions": {},
   "routes": [
     {
       "src": "/static/(.*)",
