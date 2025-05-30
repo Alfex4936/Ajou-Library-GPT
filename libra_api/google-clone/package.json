@@ -1,7 +1,10 @@
-{
-  "name": "google-clone",
+{  "name": "google-clone",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
   "dependencies": {
     "@craco/craco": "^7.1.0",
     "@emotion/react": "^11.14.0",
@@ -25,8 +28,9 @@
   "scripts": {
     "start": "cross-env NODE_OPTIONS=\"--openssl-legacy-provider --max-old-space-size=2048\" PORT=3003 FAST_REFRESH=true craco start",
     "start:clean": "npm run clean && npm run start",
-    "start:fast": "cross-env NODE_OPTIONS=\"--openssl-legacy-provider --max-old-space-size=1024\" PORT=3003 FAST_REFRESH=true DISABLE_ESLINT_PLUGIN=true craco start",
-    "build": "cross-env NODE_OPTIONS=\"--openssl-legacy-provider --max-old-space-size=8192\" GENERATE_SOURCEMAP=false INLINE_RUNTIME_CHUNK=false IMAGE_INLINE_SIZE_LIMIT=0 craco build",
+    "start:fast": "cross-env NODE_OPTIONS=\"--openssl-legacy-provider --max-old-space-size=1024\" PORT=3003 FAST_REFRESH=true DISABLE_ESLINT_PLUGIN=true craco start",    "build": "cross-env NODE_OPTIONS=\"--openssl-legacy-provider --max-old-space-size=8192\" GENERATE_SOURCEMAP=false INLINE_RUNTIME_CHUNK=false IMAGE_INLINE_SIZE_LIMIT=0 craco build",
+    "build:vercel": "cross-env GENERATE_SOURCEMAP=false INLINE_RUNTIME_CHUNK=false IMAGE_INLINE_SIZE_LIMIT=0 craco build",
+    "build:win": "cross-env NODE_OPTIONS=\"--openssl-legacy-provider --max-old-space-size=8192\" GENERATE_SOURCEMAP=false INLINE_RUNTIME_CHUNK=false IMAGE_INLINE_SIZE_LIMIT=0 craco build",
     "build:analyze": "npm run build && npx webpack-bundle-analyzer build/static/js/*.js",
     "build:prod": "cross-env NODE_ENV=production npm run clean && npm run build",
     "test": "cross-env NODE_OPTIONS=\"--openssl-legacy-provider\" craco test --watchAll=false --coverage=false",
@@ -40,12 +44,15 @@
     "serve": "serve -s build -l 3003",
     "lint": "eslint src --ext .js,.jsx,.ts,.tsx --fix",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,css,json}\""
-  },
-  "eslintConfig": {
+  },  "eslintConfig": {
     "extends": [
       "react-app",
       "react-app/jest"
-    ]
+    ],
+    "rules": {
+      "no-unused-vars": "warn",
+      "no-console": "off"
+    }
   },
   "browserslist": {
     "production": [
