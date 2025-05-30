@@ -41,9 +41,8 @@ function Home() {
   const [open, setOpen] = useState(false);
   const [openHistory, setOpenHistory] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-
-  // Ensure API key always starts with "sk-"
-  const displayKey = openAIKey || 'sk-';
+  // Ensure API key always starts with "sk-" when not empty
+  const displayKey = openAIKey;
 
   const handleClickOpenHistory = () => {
     setOpenHistory(true);
@@ -52,29 +51,23 @@ function Home() {
   const handleCloseHistory = useCallback(() => {
     setOpenHistory(false);
   }, [setOpenHistory]);  const handleKeyDown = useCallback((event) => {
-    const input = event.target;
-    const cursorPosition = input.selectionStart;
-    
-    // Prevent deletion of "sk-" prefix
-    if ((event.key === 'Backspace' || event.key === 'Delete') && cursorPosition <= 3) {
-      event.preventDefault();
-      // Move cursor to position after "sk-"
-      setTimeout(() => {
-        input.setSelectionRange(3, 3);
-      }, 0);
-    }
+    // Remove the restrictive keydown handler - let users delete freely
   }, []);
 
   const handleKeyChange = useCallback(event => {
     const value = event.target.value;
-    // Ensure the key always starts with "sk-"
-    if (value === '' || value === 'sk' || value === 's') {
-      setOpenAIKey('sk-');
-    } else if (value.startsWith('sk-')) {
-      setOpenAIKey(value);
-    } else {
-      // If user pastes a key without sk-, add it
+    
+    // Allow empty values
+    if (value === '') {
+      setOpenAIKey('');
+      return;
+    }
+    
+    // If user is typing and doesn't have sk- prefix, add it
+    if (value && !value.startsWith('sk-')) {
       setOpenAIKey('sk-' + value);
+    } else {
+      setOpenAIKey(value);
     }
   }, [setOpenAIKey]);
 
@@ -235,11 +228,11 @@ function Home() {
             label={t('settings.openaiKey')}
             type={showPassword ? 'text' : 'password'}
             onChange={handleKeyChange}
-            onKeyDown={handleKeyDown}
             fullWidth
             variant="outlined"
             className="home__textField"
             helperText={t('settings.openaiKeyHelper')}
+            placeholder="sk-"
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
