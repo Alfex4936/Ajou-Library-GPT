@@ -18,11 +18,12 @@ export default function BookDetail({ bookId, details, rentPlace, rentable }) {
         <h2 className="bookDetail__title">{title}</h2>
         <span className="bookDetail__id">{bookId}</span>
       </div>
-      
-      <div className="bookDetail__meta">
-        <h3 className="bookDetail__author">
-          <span className="bookDetail__label">Author:</span> {author}
-        </h3>
+        <div className="bookDetail__meta">
+        {author && (
+          <h3 className="bookDetail__author">
+            <span className="bookDetail__label">Author:</span> {author}
+          </h3>
+        )}
         <p className="bookDetail__publisher">
           <span className="bookDetail__label">Publisher:</span> {publisher}, {yearPublished}
         </p>

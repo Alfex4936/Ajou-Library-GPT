@@ -245,6 +245,7 @@ function SearchResult() {
             <div className="searchResult__optionsLeft">
               <SearchOption
                 title={t('common.all')}
+                tabId="All"
                 icon={<SearchIcon />}
                 setSelectedTab={setSelectedTabCallback}
                 activeTab={selectedTab}
@@ -252,6 +253,7 @@ function SearchResult() {
               />
               <SearchOption
                 title={t('common.books')}
+                tabId="Books"
                 icon={<BookIcon />}
                 setSelectedTab={setSelectedTabCallback}
                 activeTab={selectedTab}
@@ -259,6 +261,7 @@ function SearchResult() {
               />
               <SearchOption
                 title="RISS"
+                tabId="RISS"
                 icon={<MenuBookIcon />}
                 setSelectedTab={setSelectedTabCallback}
                 activeTab={selectedTab}

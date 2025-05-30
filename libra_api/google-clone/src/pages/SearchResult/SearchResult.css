@@ -105,7 +105,7 @@
   font-family: var(--heading-font);
   background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
   -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  -webkit-text-fill-color: var(--deep-brown);
   background-clip: text;
 }
 

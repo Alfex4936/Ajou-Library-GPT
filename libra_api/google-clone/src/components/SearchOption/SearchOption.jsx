@@ -3,16 +3,18 @@ import "./SearchOption.css";
 
 export default function SearchOption({
   title,
+  tabId,
   icon,
   setSelectedTab,
   activeTab,
   loading,
 }) {
-  const isActive = !loading && title === activeTab;
+  const effectiveTabId = tabId || title; // Use tabId if provided, otherwise fall back to title
+  const isActive = !loading && effectiveTabId === activeTab;
   
   const handleClick = () => {
     if (!loading) {
-      setSelectedTab(title);
+      setSelectedTab(effectiveTabId);
     }
   };
 

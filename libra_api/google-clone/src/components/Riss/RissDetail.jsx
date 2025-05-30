@@ -34,9 +34,8 @@ export default function RissDetail({ id, details }) {
           {publisher}
         </div>
       </div>
-      
-      <div className="rissDetail__actions">
-        <button className="rissDetail__viewButton" onClick={() => window.open(`https://www.riss.kr/search/detail/DetailView.do?p_mat_type=be54d9b8bc7cdb09&control_no=${id.replaceAll('"', "").trim()}`, '_blank')}>
+        <div className="rissDetail__actions">
+        <button className="rissDetail__viewButton" onClick={() => window.open(`https://www.riss.kr/search/Search.do?colName=all&isDetailSearch=N&searchGubun=true&oldQuery=&sflag=1&fsearchMethod=search&isFDetailSearch=N&searchQuery=&kbid=&pageNumber=1&query=${encodeURIComponent(title)}`, '_blank')}>
           View on RISS
         </button>
       </div>

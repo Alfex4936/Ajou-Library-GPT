@@ -54,7 +54,7 @@
 
 .bookDetail__id {
   background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-  color: white;
+  color: var(--deep-brown);
   padding: 0.5rem 1rem;
   border-radius: 20px;
   font-size: 0.85rem;
