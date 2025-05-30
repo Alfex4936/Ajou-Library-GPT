@@ -1,15 +1,12 @@
-import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
-import reducer, { initialState } from "./reducer";
-import { StateProvider } from "./StateContext";
+import './i18n'; // Initialize i18n
+import { AppStateProvider } from "./store";
 
 const rootNode = document.getElementById("root");
 
 ReactDOM.createRoot(rootNode).render(
-  <React.StrictMode>
-    <StateProvider initialState={initialState} reducer={reducer}>
+    <AppStateProvider>
       <App />
-    </StateProvider>
-  </React.StrictMode>
+    </AppStateProvider>
 );

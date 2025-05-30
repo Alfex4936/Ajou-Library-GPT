@@ -1,0 +1,151 @@
+{
+  "app": {
+    "title": "Ajou University Library",
+    "subtitle": "AI-Powered Academic Search",
+    "description": "Discover books, research papers, and academic resources with intelligent search"
+  },
+  "navigation": {
+    "settings": "Settings",
+    "history": "Search History",
+    "home": "Home",
+    "back": "Back"
+  },
+  "search": {
+    "placeholder": "Search the library...",
+    "button": "Library Search",
+    "voice": "Voice Search",
+    "options": "Search Options",
+    "advanced": "Advanced Search",
+    "filters": "Filters",
+    "sort": "Sort",
+    "results": "Search Results",
+    "noResults": "No results found",    "searching": "Searching...",    "error": "An error occurred during search",
+    "errorEmpty": "Please enter a search term",
+    "errorTooLong": "Search term is too long (maximum {{maxLength}} characters)",
+    "tryAgain": "Please try again",
+    "suggestions": {
+      "checkSpelling": "Check your spelling and try again",
+      "useGeneral": "Use more general keywords",
+      "tryDifferent": "Try different search terms",
+      "browseCollection": "Browse our collection by category"
+    },
+    "technicalDetails": "Technical details"
+  },
+  "history": {
+    "title": "Search History",
+    "empty": "No search history",
+    "emptyDescription": "Your search queries will appear here as you explore the library collection.",
+    "recent": "Recent Searches",
+    "clear": "Clear All History",
+    "clearConfirm": "Are you sure you want to clear all search history?",
+    "item": "{{count}} search term",
+    "item_other": "{{count}} search terms",
+    "justNow": "Just now",
+    "librarySearch": "Library Search"
+  },  "settings": {
+    "title": "AI Search Settings",
+    "openaiKey": "OpenAI API Key",
+    "openaiKeyHelper": "Enter your OpenAI API key for AI-powered search",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "gptModel": "GPT Model",
+    "gptModelRecommended": "GPT-4o Mini (Recommended)",
+    "numResults": "Number of Results",
+    "numResultsLabel": "Number of results: {{count}}",
+    "language": "Language",
+    "save": "Save Settings",
+    "cancel": "Cancel",
+    "saved": "Settings saved successfully"
+  },
+  "features": {
+    "smartSearch": {
+      "title": "Smart Book Search",
+      "description": "AI-powered book recommendations based on your academic needs"
+    },
+    "rissDatabase": {
+      "title": "RISS Database",
+      "description": "Access to Korean research papers and academic publications"
+    },
+    "libraryIntegration": {
+      "title": "Library Integration",
+      "description": "Real-time availability and location information"
+    }
+  },
+  "book": {
+    "title": "Title",
+    "author": "Author",
+    "publisher": "Publisher",
+    "year": "Publication Year",
+    "isbn": "ISBN",
+    "location": "Location",
+    "status": "Loan Status",
+    "available": "Available",
+    "unavailable": "Unavailable",
+    "reserved": "Reserved",
+    "details": "Details",
+    "reserve": "Reserve",
+    "extend": "Extend"
+  },
+  "riss": {
+    "title": "Title",
+    "author": "Author",
+    "journal": "Journal",
+    "year": "Publication Year",
+    "abstract": "Abstract",
+    "keywords": "Keywords",
+    "fullText": "Full Text",
+    "download": "Download",
+    "cite": "Cite"
+  },
+  "dialog": {
+    "close": "Close",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "warning": "Warning",
+    "info": "Information",
+    "retry": "Retry",
+    "more": "Show More",
+    "less": "Show Less",
+    "new": "New",
+    "popular": "Popular",
+    "recommended": "Recommended",
+    "recent": "Recent",
+    "all": "All",
+    "none": "None",
+    "other": "Other",
+    "books": "Books"
+  },  "time": {
+    "justNow": "Just now",
+    "minutesAgo": "{{count}} minute ago",
+    "minutesAgo_other": "{{count}} minutes ago",
+    "hoursAgo": "{{count}} hour ago", 
+    "hoursAgo_other": "{{count}} hours ago",
+    "daysAgo": "{{count}} day ago",
+    "daysAgo_other": "{{count}} days ago",
+    "weeksAgo": "{{count}} week ago",
+    "weeksAgo_other": "{{count}} weeks ago",
+    "monthsAgo": "{{count}} month ago",
+    "monthsAgo_other": "{{count}} months ago",
+    "yearsAgo": "{{count}} year ago",
+    "yearsAgo_other": "{{count}} years ago"
+  },
+  "language": {
+    "korean": "한국어",
+    "english": "English",
+    "change": "Change Language",
+    "changed": "Language changed successfully"
+  },
+  "brand": {
+    "ajouLibrary": "Ajou Library",
+    "ajouUniversity": "Ajou University",
+    "library": "Library"
+  }
+}

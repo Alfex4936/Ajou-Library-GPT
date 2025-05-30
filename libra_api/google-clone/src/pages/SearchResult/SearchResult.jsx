@@ -1,44 +1,41 @@
-import PropTypes from 'prop-types'; // Import PropTypes for better component documentation
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { useTranslation } from 'react-i18next';
 import { Link } from "react-router-dom";
 
-import CircularProgress from "@material-ui/core/CircularProgress";
-import ArrowDropDownIcon from "@material-ui/icons/ArrowDropDown";
-import BookIcon from "@material-ui/icons/Book";
-import CloseIcon from "@material-ui/icons/Close";
-import MenuBook from "@material-ui/icons/MenuBook";
-import SearchIcon from "@material-ui/icons/Search";
+import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+import BookIcon from "@mui/icons-material/Book";
+import CloseIcon from "@mui/icons-material/Close";
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import SearchIcon from "@mui/icons-material/Search";
 
 import useLibraSearch from "../../hooks/useLibraSearch/useLibraSearch";
-import { useStateValue } from "../../StateContext";
+import { useSearchState, useUIActions } from "../../store";
 
+import LanguageSelector from "../../components/LanguageSelector";
 import Search from "../../components/Search/Search";
 import SearchOption from "../../components/SearchOption/SearchOption";
 
 import BookDetail from "../../components/Book/BookDetail";
-import RissDetail from "../../components/RISS/RissDetail";
+import RissDetail from "../../components/Riss/RissDetail";
 
-import IconButton from "@material-ui/core/IconButton";
-import Snackbar from "@material-ui/core/Snackbar";
-import MuiAlert from "@material-ui/lab/Alert";
-
-import Chip from "@material-ui/core/Chip";
-import Divider from "@material-ui/core/Divider";
+import MuiAlert from "@mui/material/Alert";
+import Chip from "@mui/material/Chip";
+import CircularProgress from '@mui/material/CircularProgress';
+import Divider from "@mui/material/Divider";
+import IconButton from "@mui/material/IconButton";
+import Snackbar from "@mui/material/Snackbar";
 
 import "./SearchResult.css";
 
-const Alert = React.forwardRef(function Alert(props, ref) { // Use forwardRef for Alert component
-  return <MuiAlert elevation={6} variant="filled" {...props} ref={ref} />;
-});
-Alert.propTypes = { // Add PropTypes for Alert component
-  elevation: PropTypes.number,
-  variant: PropTypes.string,
-};
+function Alert(props) {
+  return <MuiAlert elevation={6} variant="filled" {...props} />;
+}
 
 function SearchResult() {
-  const [{ term, error }] = useStateValue();
-  const { data, loading } = useLibraSearch(term); // LIVE API Call
-
+  const { t } = useTranslation();
+  const { term, error } = useSearchState();
+  const { clearError } = useUIActions();
+  const { data, loading, error: searchError } = useLibraSearch(term); // LIVE API Call
 
   const [selectedTab, setSelectedTab] = useState("All");
   const [openSuccess, setOpenSuccess] = useState(false);
@@ -47,13 +44,16 @@ function SearchResult() {
     setSelectedTab(newTab);
   }, []);
 
+  // Combine errors from different sources
+  const combinedError = error || searchError;
+
   useEffect(() => {
-    if (!loading && !error && term && data) { // ADDED: Check if data is truthy
+    if (!loading && !combinedError && term && data) { // Use combinedError
       setOpenSuccess(true);
     } else {
       setOpenSuccess(false); // Optionally, ensure success toast is closed if conditions are not met
     }
-  }, [loading, error, term, data]); // ADDED: data to the dependency array
+  }, [loading, combinedError, term, data]); // Use combinedError
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "auto" });
@@ -74,15 +74,15 @@ function SearchResult() {
     if (reason === "clickaway") {
       return;
     }
-    // Error handling logic...
-  }, []);
+    clearError();
+  }, [clearError]);
 
   const renderSearchResults = useMemo(() => { // Memoize the rendering logic for better performance
     if (!term) {
       return (
         <div className="searchResult__items">
           <p className="searchResult__itemsCount" style={{ whiteSpace: "pre-line" }}>
-            {error}
+            {combinedError}
           </p>
         </div>
       );
@@ -91,24 +91,24 @@ function SearchResult() {
       <div className="searchResult__items">
         {loading ? (
           <div>
-            <p className="searchResult__itemsCount">Loading...</p>
+            <p className="searchResult__itemsCount">{t('common.loading')}</p>
             <CircularProgress />
           </div>
         ) : (
           <>
             {filteredData &&
-            ((Array.isArray(filteredData) && filteredData.length > 0) ||
-              (filteredData?.books?.length || 0) +
+              ((Array.isArray(filteredData) && filteredData.length > 0) ||
+                (filteredData?.books?.length || 0) +
                 (filteredData?.riss?.length || 0) >
                 0) ? (
               <>
                 <p className="searchResult__itemsCount" style={{ whiteSpace: "pre-line" }}>
-                  About{" "}
+                  {t('search.results')} {" "}
                   {Array.isArray(filteredData)
                     ? filteredData.length
                     : (filteredData?.books?.length || 0) +
-                      (filteredData?.riss?.length || 0)}{" "}
-                  results for {term}
+                    (filteredData?.riss?.length || 0)}{" "}
+                  {t('search.results')} for {term}
                   <br />
                   <br />
                   {data?.queries.map((query, index) => (
@@ -127,9 +127,9 @@ function SearchResult() {
 
                     {data?.books && data.books.length > 0 && ( // Conditionally render Books section
                       <>
-                        <a href="#" className="searchResult__itemLink">
-                          Books - <ArrowDropDownIcon />
-                        </a>
+                        <button className="searchResult__itemLink" type="button">
+                          {t('book.title')} - <ArrowDropDownIcon />
+                        </button>
                         {data.books.map(item => (
                           <BookDetail
                             key={item.book_id}
@@ -145,9 +145,9 @@ function SearchResult() {
 
                     {data?.riss && data.riss.length > 0 && ( // Conditionally render RISS section
                       <>
-                        <a href="#" className="searchResult__itemLink">
+                        <button className="searchResult__itemLink" type="button">
                           RISS - <ArrowDropDownIcon />
-                        </a>
+                        </button>
                         {data.riss.map(item => (
                           <RissDetail key={item.id} id={item.id} details={item.details} />
                         ))}
@@ -175,21 +175,43 @@ function SearchResult() {
                 )}
               </>
             ) : (
-              <a className="searchResult__itemTitle">
-                <h2>
-                  No results found.
-                  <br />
-                  Check OpenAI API Key.
-                  <br />
-                  {!!error ? `${error}` : ""}
-                </h2>
-              </a>
+              <div className="searchResult__noResults">
+                <div className="searchResult__noResultsIcon">
+                  <SearchIcon className="searchResult__noResultsIconMain" />
+                  <div className="searchResult__noResultsRipple"></div>
+                  <div className="searchResult__noResultsRipple searchResult__noResultsRipple--delay"></div>
+                </div>
+                <div className="searchResult__noResultsContent">
+                  <h2 className="searchResult__noResultsTitle">
+                    {t('search.noResults')}
+                  </h2>
+                  <p className="searchResult__noResultsSubtitle">
+                    {t('search.error')}
+                    <br />
+                    "<span className="searchResult__noResultsTerm">{term}</span>"
+                  </p>
+                  <div className="searchResult__noResultsSuggestions">
+                    <h3>{t('search.tryAgain')}:</h3>
+                    <ul>
+                      <li>{t('search.suggestions.checkSpelling')}</li>
+                      <li>{t('search.suggestions.useGeneral')}</li>
+                      <li>{t('search.suggestions.tryDifferent')}</li>
+                      <li>{t('search.suggestions.browseCollection')}</li>
+                    </ul>
+                  </div>
+                  {/* {!!combinedError && (
+                    <div className="searchResult__noResultsError">
+                      <strong>{t('search.technicalDetails')}:</strong> {combinedError}
+                    </div>
+                  )} */}
+                </div>
+              </div>
             )}
           </>
         )}
       </div>
     );
-  }, [loading, error, term, filteredData, selectedTab, data?.queries, data?.books, data?.riss]); // Add all dependencies for memoization
+  }, [loading, combinedError, term, filteredData, selectedTab, data?.queries, data?.books, data?.riss, t]); // Add all dependencies for memoization
 
 
   return (
@@ -198,25 +220,29 @@ function SearchResult() {
         <Link to="/">
           <img
             className="searchResult__logo pulse"
-            src="logo_search.png"
-            alt="Logo"
+            src="logo-transparent.png"
+            alt="Ajou Library Logo"
           />
         </Link>
 
         <div className="searchResult__headerBody">
           <Search hideButtons loading={loading} />
 
+          <div className="searchResult__headerActions">
+            <LanguageSelector variant="compact" />
+          </div>
+
           <div className="searchResult__options">
             <div className="searchResult__optionsLeft">
               <SearchOption
-                title="All"
+                title={t('common.all')}
                 icon={<SearchIcon />}
                 setSelectedTab={setSelectedTabCallback}
                 activeTab={selectedTab}
                 loading={loading}
               />
               <SearchOption
-                title="Books"
+                title={t('common.books')}
                 icon={<BookIcon />}
                 setSelectedTab={setSelectedTabCallback}
                 activeTab={selectedTab}
@@ -224,7 +250,7 @@ function SearchResult() {
               />
               <SearchOption
                 title="RISS"
-                icon={<MenuBook />}
+                icon={<MenuBookIcon />}
                 setSelectedTab={setSelectedTabCallback}
                 activeTab={selectedTab}
                 loading={loading}
@@ -234,7 +260,9 @@ function SearchResult() {
         </div>
       </div>
 
-      {renderSearchResults} {/* Render search results using memoized component */}
+      <div className="searchResult__body">
+        {renderSearchResults}
+      </div>
 
       <Snackbar
         open={openSuccess}
@@ -243,14 +271,14 @@ function SearchResult() {
           horizontal: "left",
         }}
         autoHideDuration={5000}
-        onClose={() => setOpenSuccess(false)} // Directly setOpenSuccess(false)
+        onClose={() => setOpenSuccess(false)}
       >
         <Alert
-          onClose={() => setOpenSuccess(false)} // Directly setOpenSuccess(false)
+          onClose={() => setOpenSuccess(false)}
           severity="success"
           sx={{ width: "100%" }}
         >
-          Successfully loaded!
+          {t('common.success')}
         </Alert>
       </Snackbar>
       <Snackbar

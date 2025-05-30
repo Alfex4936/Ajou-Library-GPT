@@ -1,0 +1,246 @@
+/**
+ * Language-specific font optimizations
+ * This file provides enhanced typography for Korean and English content
+ * with automatic fallbacks and platform-specific optimizations.
+ */
+
+/* Pretendard font import for better Korean typography */
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.8/dist/web/static/pretendard.css');
+
+/* Enhanced font stacks for different platforms and use cases */
+:root {
+  /* Modern Korean font stack with system font fallbacks */
+  --font-korean-enhanced: 'Pretendard', 
+                          -apple-system, 
+                          'BlinkMacSystemFont', 
+                          'Apple SD Gothic Neo', 
+                          'Inter', 
+                          'Segoe UI', 
+                          'Malgun Gothic', 
+                          '맑은 고딕',
+                          'Noto Sans KR', 
+                          'Nanum Gothic',
+                          '나눔고딕',
+                          'Dotum',
+                          '돋움',
+                          sans-serif;
+
+  /* Premium English font stack */
+  --font-english-enhanced: 'Source Sans Pro',
+                           'Inter',
+                           -apple-system,
+                           'BlinkMacSystemFont',
+                           'Segoe UI',
+                           'Roboto',
+                           'Helvetica Neue',
+                           'Arial',
+                           sans-serif;
+
+  /* Elegant heading fonts */
+  --font-heading-english: 'Playfair Display',
+                          'Georgia',
+                          'Times New Roman',
+                          serif;
+
+  --font-heading-korean: 'Pretendard',
+                         'Apple SD Gothic Neo',
+                         'Noto Sans KR',
+                         'Malgun Gothic',
+                         '맑은 고딕',
+                         sans-serif;
+
+  /* Code/monospace fonts with Korean support */
+  --font-mono-enhanced: 'SF Mono',
+                        'Monaco',
+                        'Cascadia Code',
+                        'Roboto Mono',
+                        'Consolas',
+                        'D2Coding',
+                        '나눔고딕코딩',
+                        monospace;
+}
+
+/* Enhanced language-specific optimizations */
+.lang-ko {
+  /* Korean text rendering optimizations */
+  font-feature-settings: "kern" 1, "liga" 1;
+  text-rendering: optimizeLegibility;
+  -webkit-text-size-adjust: 100%;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  hyphens: none;
+}
+
+.lang-ko h1, .lang-ko h2, .lang-ko h3 {
+  /* Korean headings - slightly heavier weight for better readability */
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.4;
+}
+
+.lang-ko h4, .lang-ko h5, .lang-ko h6 {
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  line-height: 1.5;
+}
+
+.lang-ko p, .lang-ko .body-text {
+  /* Korean body text optimization */
+  line-height: 1.7;
+  letter-spacing: -0.01em;
+  word-spacing: 0.05em;
+}
+
+.lang-ko .small-text {
+  /* Korean small text (captions, labels, etc.) */
+  letter-spacing: 0;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.lang-en {
+  /* English text rendering optimizations */
+  font-feature-settings: "kern" 1, "liga" 1, "calt" 1;
+  text-rendering: optimizeLegibility;
+  -webkit-text-size-adjust: 100%;
+  word-break: normal;
+  overflow-wrap: break-word;
+  hyphens: auto;
+}
+
+.lang-en h1, .lang-en h2, .lang-en h3 {
+  /* English headings - elegant and refined */
+  font-weight: 500;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+
+.lang-en h4, .lang-en h5, .lang-en h6 {
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+
+.lang-en p, .lang-en .body-text {
+  /* English body text optimization */
+  line-height: 1.6;
+  letter-spacing: normal;
+}
+
+/* Component-specific optimizations */
+
+/* Search input optimizations */
+.lang-ko .search__input {
+  font-family: var(--font-korean-enhanced);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.lang-en .search__input {
+  font-family: var(--font-english-enhanced);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+/* Navigation and UI text */
+.lang-ko .nav-text, .lang-ko .ui-text {
+  font-family: var(--font-korean-enhanced);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.lang-en .nav-text, .lang-en .ui-text {
+  font-family: var(--font-english-enhanced);
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+
+/* Button text optimizations */
+.lang-ko .MuiButton-root {
+  font-family: var(--font-korean-enhanced);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.lang-en .MuiButton-root {
+  font-family: var(--font-english-enhanced);
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+/* Material-UI component overrides */
+.lang-ko .MuiTypography-root {
+  font-family: var(--font-korean-enhanced);
+}
+
+.lang-en .MuiTypography-root {
+  font-family: var(--font-english-enhanced);
+}
+
+.lang-ko .MuiTypography-h1,
+.lang-ko .MuiTypography-h2,
+.lang-ko .MuiTypography-h3,
+.lang-ko .MuiTypography-h4,
+.lang-ko .MuiTypography-h5,
+.lang-ko .MuiTypography-h6 {
+  font-family: var(--font-heading-korean);
+}
+
+.lang-en .MuiTypography-h1,
+.lang-en .MuiTypography-h2,
+.lang-en .MuiTypography-h3,
+.lang-en .MuiTypography-h4,
+.lang-en .MuiTypography-h5,
+.lang-en .MuiTypography-h6 {
+  font-family: var(--font-heading-english);
+}
+
+/* Form inputs */
+.lang-ko .MuiInputBase-input {
+  font-family: var(--font-korean-enhanced);
+}
+
+.lang-en .MuiInputBase-input {
+  font-family: var(--font-english-enhanced);
+}
+
+/* Code blocks and monospace */
+.lang-ko code, .lang-ko pre {
+  font-family: var(--font-mono-enhanced);
+}
+
+.lang-en code, .lang-en pre {
+  font-family: var(--font-mono-enhanced);
+}
+
+/* Accessibility improvements */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .lang-ko, .lang-en {
+    font-weight: 500;
+  }
+  
+  .lang-ko h1, .lang-ko h2, .lang-ko h3,
+  .lang-en h1, .lang-en h2, .lang-en h3 {
+    font-weight: 700;
+  }
+}
+
+/* Print styles with proper fonts */
+@media print {
+  .lang-ko {
+    font-family: 'Malgun Gothic', '맑은 고딕', 'Dotum', '돋움', sans-serif;
+  }
+  
+  .lang-en {
+    font-family: 'Times New Roman', 'Georgia', serif;
+  }
+}

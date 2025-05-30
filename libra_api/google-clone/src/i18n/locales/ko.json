@@ -1,0 +1,151 @@
+{
+  "app": {
+    "title": "아주대학교 도서관",
+    "subtitle": "AI 기반 학술 검색",
+    "description": "지능형 검색으로 도서, 연구 논문, 학술 자료를 발견하세요"
+  },
+  "navigation": {
+    "settings": "설정",
+    "history": "검색 기록",
+    "home": "홈",
+    "back": "뒤로가기"
+  },
+  "search": {
+    "placeholder": "도서관에서 검색하세요...",
+    "button": "도서관 검색",
+    "voice": "음성 검색",
+    "options": "검색 옵션",
+    "advanced": "고급 검색",
+    "filters": "필터",
+    "sort": "정렬",
+    "results": "검색 결과",
+    "noResults": "결과가 없습니다",    "searching": "검색 중...",    "error": "검색 중 오류가 발생했습니다",
+    "errorEmpty": "검색어를 입력해주세요",
+    "errorTooLong": "검색어가 너무 깁니다 (최대 {{maxLength}}자)",
+    "tryAgain": "다시 시도해주세요",
+    "suggestions": {
+      "checkSpelling": "맞춤법을 확인하고 다시 시도해보세요",
+      "useGeneral": "더 일반적인 키워드를 사용해보세요",
+      "tryDifferent": "다른 검색어를 시도해보세요",
+      "browseCollection": "카테고리별로 컬렉션을 둘러보세요"
+    },
+    "technicalDetails": "기술적 세부사항"
+  },
+  "history": {
+    "title": "검색 기록",
+    "empty": "검색 기록이 없습니다",
+    "emptyDescription": "도서관 컬렉션을 탐색하면서 검색 쿼리가 여기에 나타납니다.",
+    "recent": "최근 검색",
+    "clear": "모든 기록 삭제",
+    "clearConfirm": "모든 검색 기록을 삭제하시겠습니까?",
+    "item": "{{count}}개 검색어",
+    "item_other": "{{count}}개 검색어",
+    "justNow": "방금 전",
+    "librarySearch": "도서관 검색"
+  },  "settings": {
+    "title": "AI 검색 설정",
+    "openaiKey": "OpenAI API 키",
+    "openaiKeyHelper": "AI 기반 검색을 위한 OpenAI API 키를 입력하세요",
+    "showPassword": "비밀번호 보기",
+    "hidePassword": "비밀번호 숨기기",
+    "gptModel": "GPT 모델",
+    "gptModelRecommended": "GPT-4o Mini (권장)",
+    "numResults": "결과 수",
+    "numResultsLabel": "결과 수: {{count}}",
+    "language": "언어",
+    "save": "설정 저장",
+    "cancel": "취소",
+    "saved": "설정이 저장되었습니다"
+  },
+  "features": {
+    "smartSearch": {
+      "title": "스마트 도서 검색",
+      "description": "학술적 필요에 기반한 AI 기반 도서 추천"
+    },
+    "rissDatabase": {
+      "title": "RISS 데이터베이스",
+      "description": "한국 연구 논문 및 학술 출판물 접근"
+    },
+    "libraryIntegration": {
+      "title": "도서관 통합",
+      "description": "실시간 이용 가능성 및 위치 정보"
+    }
+  },
+  "book": {
+    "title": "제목",
+    "author": "저자",
+    "publisher": "출판사",
+    "year": "출판년도",
+    "isbn": "ISBN",
+    "location": "위치",
+    "status": "대출 상태",
+    "available": "대출 가능",
+    "unavailable": "대출 불가",
+    "reserved": "예약됨",
+    "details": "상세 정보",
+    "reserve": "예약하기",
+    "extend": "연장하기"
+  },
+  "riss": {
+    "title": "제목",
+    "author": "저자",
+    "journal": "학술지",
+    "year": "발행년도",
+    "abstract": "초록",
+    "keywords": "키워드",
+    "fullText": "전문보기",
+    "download": "다운로드",
+    "cite": "인용하기"
+  },
+  "dialog": {
+    "close": "닫기",
+    "confirm": "확인",
+    "cancel": "취소",
+    "save": "저장",
+    "delete": "삭제",
+    "edit": "편집"
+  },
+  "common": {
+    "loading": "로딩 중...",
+    "error": "오류",
+    "success": "성공",
+    "warning": "경고",
+    "info": "정보",
+    "retry": "다시 시도",
+    "more": "더보기",
+    "less": "접기",
+    "new": "새로운",
+    "popular": "인기",
+    "recommended": "추천",
+    "recent": "최근",
+    "all": "전체",
+    "none": "없음",
+    "other": "기타",
+    "books": "도서"
+  },  "time": {
+    "justNow": "방금 전",
+    "minutesAgo": "{{count}}분 전",
+    "minutesAgo_other": "{{count}}분 전",
+    "hoursAgo": "{{count}}시간 전",
+    "hoursAgo_other": "{{count}}시간 전", 
+    "daysAgo": "{{count}}일 전",
+    "daysAgo_other": "{{count}}일 전",
+    "weeksAgo": "{{count}}주 전",
+    "weeksAgo_other": "{{count}}주 전",
+    "monthsAgo": "{{count}}개월 전",
+    "monthsAgo_other": "{{count}}개월 전",
+    "yearsAgo": "{{count}}년 전",
+    "yearsAgo_other": "{{count}}년 전"
+  },
+  "language": {
+    "korean": "한국어",
+    "english": "English",
+    "change": "언어 변경",
+    "changed": "언어가 변경되었습니다"
+  },
+  "brand": {
+    "ajouLibrary": "아주도서관",
+    "ajouUniversity": "아주대학교",
+    "library": "도서관"
+  }
+}
