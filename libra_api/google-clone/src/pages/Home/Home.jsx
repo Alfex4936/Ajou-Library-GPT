@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { useTranslation } from 'react-i18next';
 
 import History from "../../components/History/History";
@@ -32,27 +32,12 @@ import Typography from "@mui/material/Typography";
 
 import "./Home.css";
 
-const useLocalStorageState = (key, defaultValue) => {
-  const [state, setState] = useState(() => {
-    const storedValue = localStorage.getItem(key);
-    return storedValue !== null ? storedValue : defaultValue;
-  });
-
-  useEffect(() => {
-    localStorage.setItem(key, state);
-  }, [key, state]);
-
-  return [state, setState];
-};
-
 function Home() {
   const { t } = useTranslation();
-  const { numResults } = useSettingsState();
+  const { numResults, openAIKey, gptModel } = useSettingsState();
   const { history } = useHistoryState();
-  const { setNumResults } = useSettingsActions();
+  const { setNumResults, setOpenAIKey, setGptModel } = useSettingsActions();
   const { clearHistory } = useHistoryActions();
-  const [openAIKey, setOpenAIKey] = useLocalStorageState("openAIKey", 'sk-');
-  const [gptModel, setGptModel] = useLocalStorageState("gptModel", 'gpt-4o-mini');
   const [open, setOpen] = useState(false);
   const [openHistory, setOpenHistory] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -99,7 +84,8 @@ function Home() {
     <div className="home">      {/* Header with elegant navigation */}
       <header className="home__header">
         <div className="home__brand">
-          <LocalLibraryIcon className="home__brandIcon" />          <a href="https://library.ajou.ac.kr/#/" target="_blank" rel="noopener noreferrer">
+          <LocalLibraryIcon className="home__brandIcon" />
+          <a href="https://library.ajou.ac.kr/#/" target="_blank" rel="noopener noreferrer">
             <Typography variant="h6" className="home__brandText">
               {t('brand.ajouLibrary')}
             </Typography>
@@ -217,37 +203,36 @@ function Home() {
           {t('settings.title')}
         </DialogTitle>
         <DialogContent className="home__dialogContent">          <TextField
-            autoFocus
-            margin="dense"
-            value={openAIKey}
-            id="openai-key"
-            label={t('settings.openaiKey')}
-            type={showPassword ? 'text' : 'password'}
-            onChange={handleKeyChange}
-            fullWidth
-            variant="outlined"
-            className="home__textField"
-            helperText={t('settings.openaiKeyHelper')}
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    onClick={handleTogglePasswordVisibility}
-                    edge="end"
-                    aria-label={showPassword ? t('settings.hidePassword') : t('settings.showPassword')}
-                  >
-                    {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-          />
+          autoFocus
+          margin="dense"
+          value={openAIKey}
+          id="openai-key"
+          label={t('settings.openaiKey')}
+          type={showPassword ? 'text' : 'password'}
+          onChange={handleKeyChange}
+          fullWidth
+          variant="outlined"
+          className="home__textField"
+          helperText={t('settings.openaiKeyHelper')}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  onClick={handleTogglePasswordVisibility}
+                  edge="end"
+                  aria-label={showPassword ? t('settings.hidePassword') : t('settings.showPassword')}
+                >
+                  {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+        />
 
           <div className="home__fieldGroup">
             <Typography variant="subtitle1" className="home__fieldLabel">
               {t('settings.gptModel')}
-            </Typography>
-            <Select
+            </Typography>            <Select
               native
               value={gptModel}
               onChange={event => setGptModel(event.target.value)}

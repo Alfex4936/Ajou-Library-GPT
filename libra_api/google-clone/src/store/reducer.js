@@ -34,6 +34,38 @@ const storageHelper = {
 
 // Initialize state with localStorage data
 const getInitialState = () => {
+  // Migrate old localStorage keys to new ones
+  const migrateOldData = () => {
+    // Migrate openAIKey from old key to new key
+    const oldOpenAIKey = localStorage.getItem('openAIKey');
+    if (oldOpenAIKey && !localStorage.getItem(STORAGE_KEYS.OPENAI_KEY)) {
+      storageHelper.set(STORAGE_KEYS.OPENAI_KEY, oldOpenAIKey);
+      localStorage.removeItem('openAIKey'); // Clean up old key
+    }
+    
+    // Migrate gptModel from old key to new key
+    const oldGptModel = localStorage.getItem('gptModel');
+    if (oldGptModel && !localStorage.getItem(STORAGE_KEYS.GPT_MODEL)) {
+      storageHelper.set(STORAGE_KEYS.GPT_MODEL, oldGptModel);
+      localStorage.removeItem('gptModel'); // Clean up old key
+    }
+    
+    // Migrate search history if needed
+    const oldHistory = localStorage.getItem('searchHistory');
+    if (oldHistory && !localStorage.getItem(STORAGE_KEYS.SEARCH_HISTORY)) {
+      try {
+        const parsedHistory = JSON.parse(oldHistory);
+        storageHelper.set(STORAGE_KEYS.SEARCH_HISTORY, parsedHistory);
+        localStorage.removeItem('searchHistory'); // Clean up old key
+      } catch (e) {
+        console.warn('Failed to migrate old search history:', e);
+      }
+    }
+  };
+  
+  // Run migration
+  migrateOldData();
+  
   const savedHistory = storageHelper.get(STORAGE_KEYS.SEARCH_HISTORY, []);
   const migratedHistory = migrateHistoryData(savedHistory);
   const savedOpenAIKey = storageHelper.get(STORAGE_KEYS.OPENAI_KEY, DEFAULT_STATE.openAIKey);
