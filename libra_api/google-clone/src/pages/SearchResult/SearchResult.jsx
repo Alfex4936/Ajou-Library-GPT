@@ -39,6 +39,7 @@ function SearchResult() {
 
   const [selectedTab, setSelectedTab] = useState("All");
   const [openSuccess, setOpenSuccess] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   const setSelectedTabCallback = useCallback(newTab => {
     setSelectedTab(newTab);
@@ -54,6 +55,11 @@ function SearchResult() {
       setOpenSuccess(false); // Optionally, ensure success toast is closed if conditions are not met
     }
   }, [loading, combinedError, term, data]); // Use combinedError
+
+  useEffect(() => {
+    setIsMounted(true);
+    return () => setIsMounted(false);
+  }, []);
 
   useEffect(() => {
     try {
@@ -96,7 +102,9 @@ function SearchResult() {
         {loading ? (
           <div>
             <p className="searchResult__itemsCount">{t('common.loading')}</p>
-            <CircularProgress />
+            <div>
+              <CircularProgress />
+            </div>
           </div>
         ) : (
           <>
@@ -265,45 +273,51 @@ function SearchResult() {
         {renderSearchResults}
       </div>
 
-      <Snackbar
-        open={openSuccess}
-        anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "left",
-        }}
-        autoHideDuration={5000}
-        onClose={() => setOpenSuccess(false)}
-      >
-        <Alert
-          onClose={() => setOpenSuccess(false)}
-          severity="success"
-          sx={{ width: "100%" }}
-        >
-          {t('common.success')}
-        </Alert>
-      </Snackbar>
-      <Snackbar
-        anchorOrigin={{
-          vertical: "bottom",
-          horizontal: "left",
-        }}
-        open={!!error}
-        autoHideDuration={5000}
-        onClose={handleCloseError}
-        message={error}
-        action={
-          <React.Fragment>
-            <IconButton
-              size="small"
-              aria-label="close"
-              color="inherit"
-              onClick={handleCloseError}
-            >
-              <CloseIcon fontSize="small" />
-            </IconButton>
-          </React.Fragment>
-        }
-      />
+      {isMounted && (
+        <>
+          <Snackbar
+            open={openSuccess}
+            anchorOrigin={{
+              vertical: "bottom",
+              horizontal: "left",
+            }}
+            autoHideDuration={5000}
+            onClose={() => setOpenSuccess(false)}
+          >
+            <div>
+              <Alert
+                onClose={() => setOpenSuccess(false)}
+                severity="success"
+                sx={{ width: "100%" }}
+              >
+                {t('common.success')}
+              </Alert>
+            </div>
+          </Snackbar>
+          <Snackbar
+            anchorOrigin={{
+              vertical: "bottom",
+              horizontal: "left",
+            }}
+            open={!!error}
+            autoHideDuration={5000}
+            onClose={handleCloseError}
+            message={error}
+            action={
+              <React.Fragment>
+                <IconButton
+                  size="small"
+                  aria-label="close"
+                  color="inherit"
+                  onClick={handleCloseError}
+                >
+                  <CloseIcon fontSize="small" />
+                </IconButton>
+              </React.Fragment>
+            }
+          />
+        </>
+      )}
     </div>
   );
 }
