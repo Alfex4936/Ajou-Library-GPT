@@ -70,8 +70,7 @@
       "title": "Library Integration",
       "description": "Real-time availability and location information"
     }
-  },
-  "book": {
+  },  "book": {
     "title": "Title",
     "author": "Author",
     "publisher": "Publisher",
@@ -84,7 +83,8 @@
     "reserved": "Reserved",
     "details": "Details",
     "reserve": "Reserve",
-    "extend": "Extend"
+    "extend": "Extend",
+    "at": "at"
   },
   "riss": {
     "title": "Title",

@@ -70,8 +70,7 @@
       "title": "도서관 통합",
       "description": "실시간 이용 가능성 및 위치 정보"
     }
-  },
-  "book": {
+  },  "book": {
     "title": "제목",
     "author": "저자",
     "publisher": "출판사",
@@ -84,7 +83,8 @@
     "reserved": "예약됨",
     "details": "상세 정보",
     "reserve": "예약하기",
-    "extend": "연장하기"
+    "extend": "연장하기",
+    "at": "에서"
   },
   "riss": {
     "title": "제목",
